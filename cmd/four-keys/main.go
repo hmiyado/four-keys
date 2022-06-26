@@ -1,17 +1,17 @@
 package main
 
 import (
-	"os"
 	"log"
+	"os"
 
-    "github.com/hmiyado/four-keys/internal/cli"
+	"github.com/hmiyado/four-keys/internal/cli"
 )
 
 func main() {
-    app := cli.DefaultApp()
+	app := cli.DefaultApp()
 
-    if err := app.Run(os.Args); err != nil {
-        log.Fatal(err)
-    }
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 
 }
