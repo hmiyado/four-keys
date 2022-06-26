@@ -1,3 +1,8 @@
+.PHONY: build
+build:
+	go build -o four-keys cmd/four-keys/main.go
+
 .PHONY: run
 run:
-	go run cmd/four-keys/main.go
+	make build
+	./four-keys
