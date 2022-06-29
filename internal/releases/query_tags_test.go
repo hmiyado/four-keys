@@ -9,10 +9,10 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
-var r, emptyRepository *git.Repository
+var repository, emptyRepository *git.Repository
 
 func TestMain(m *testing.M) {
-	r, _ = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+	repository, _ = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 		URL: "https://github.com/go-git/go-git",
 	})
 	emptyRepository, _ = git.Init(memory.NewStorage(), nil)
@@ -23,8 +23,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestQueryReleasesShouldHaveSameCountToTags(t *testing.T) {
-	releases := QueryReleases(r)
-	expectedReleasesNum := len(QueryTags(r))
+	releases := QueryReleases(repository)
+	expectedReleasesNum := len(QueryTags(repository))
 
 	if len(releases) != expectedReleasesNum {
 		for i := 0; i < len(releases); i++ {
@@ -39,7 +39,7 @@ func TestQueryReleasesShouldHaveSameCountToTags(t *testing.T) {
 }
 
 func TestQueryReleasesShouldBeSortedByDate(t *testing.T) {
-	releases := QueryReleases(r)
+	releases := QueryReleases(repository)
 
 	if sort.SliceIsSorted(releases, func(i, j int) bool { return releases[i].Date.Before(releases[j].Date) }) {
 		return
@@ -71,7 +71,7 @@ func TestQueryReleasesShouldReturnEmptyForEmptyRepository(t *testing.T) {
 }
 
 func TestQueryTagsShouldHaveTags(t *testing.T) {
-	tags := QueryTags(r)
+	tags := QueryTags(repository)
 	expectedTagNum := 60
 
 	if len(tags) != expectedTagNum {
