@@ -15,17 +15,38 @@ type Release struct {
 	Date time.Time
 }
 
+type Option struct {
+	// inclucive
+	StartDate time.Time
+	// inclucive
+	EndDate time.Time
+}
+
 func (r *Release) String() string {
 	return fmt.Sprintf("(Tag=%v,Date=%v)", r.Tag, r.Date)
 }
 
-func QueryReleases(repository *git.Repository) []*Release {
+func (r *Release) Equal(another *Release) bool {
+	return r.Tag == another.Tag && r.Date.Equal(another.Date)
+}
+
+func (o *Option) isInTimeRange(time time.Time) bool {
+	if o == nil {
+		return true
+	}
+	return time.After(o.StartDate) && time.Before(o.EndDate)
+}
+
+func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	tags := QueryTags(repository)
-	releases := make([]*Release, len(tags))
+	releases := make([]*Release, 0)
 	for i := 0; i < len(tags); i++ {
 		tag := tags[i]
 		commit, _ := repository.CommitObject(tag.Hash())
-		releases[i] = &Release{Tag: tag.Name().Short(), Date: commit.Author.When}
+		commitDate := commit.Author.When
+		if option.isInTimeRange(commitDate) {
+			releases = append(releases, &Release{Tag: tag.Name().Short(), Date: commitDate})
+		}
 	}
 	sort.Slice(releases, func(i, j int) bool { return releases[i].Date.Before(releases[j].Date) })
 	return releases
