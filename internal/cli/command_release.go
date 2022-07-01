@@ -78,7 +78,7 @@ func parseOptionRepository(ctx *cli.Context) (*git.Repository, error) {
 	var repository *git.Repository
 	var error error
 	if repositoryUrl == "" {
-		repository, error = git.PlainOpen("./")
+		repository, error = git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 		if error != nil {
 			return nil, errors.New("cannot open repository at current directory")
 		}

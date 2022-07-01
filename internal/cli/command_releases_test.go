@@ -11,6 +11,20 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+func TestGetCommandReleaseShouldReturnReleasesWithoutOptions(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output}
+	set := flag.NewFlagSet("test", 0)
+	_ = set.Parse([]string{"releases"})
+
+	cCtx := cli.NewContext(app, set, nil)
+	error := GetCommandReleases().Run(cCtx)
+
+	if error != nil {
+		t.Errorf("releases without options failed. error:%v", error.Error())
+	}
+}
+
 func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrl(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
