@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -40,7 +39,7 @@ func GetCommandReleases() *cli.Command {
 
 			repository, error := parseOptionRepository(ctx)
 			if error != nil {
-				fmt.Fprintln(os.Stderr, error.Error())
+				ctx.App.ErrWriter.Write([]byte(error.Error()))
 				return error
 			}
 
