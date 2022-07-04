@@ -29,6 +29,11 @@ var CommandReleasesFlags []cli.Flag = []cli.Flag{
 	},
 }
 
+type ReleasesCliOutput struct {
+	Option   *releases.Option    `json:"option"`
+	Releases []*releases.Release `json:"releases"`
+}
+
 func GetCommandReleases() *cli.Command {
 	return &cli.Command{
 		Name:  "releases",
@@ -43,11 +48,15 @@ func GetCommandReleases() *cli.Command {
 				return error
 			}
 
-			releases := releases.QueryReleases(repository, &releases.Option{
+			option := &releases.Option{
 				StartDate: since,
 				EndDate:   until,
+			}
+			releases := releases.QueryReleases(repository, option)
+			releasesJson, error := json.Marshal(&ReleasesCliOutput{
+				Option:   option,
+				Releases: releases,
 			})
-			releasesJson, error := json.Marshal(releases)
 			if error != nil {
 				ctx.App.ErrWriter.Write([]byte(error.Error()))
 				return error

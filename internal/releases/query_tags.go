@@ -11,15 +11,15 @@ import (
 )
 
 type Release struct {
-	Tag  string
-	Date time.Time
+	Tag  string    `json:"tag"`
+	Date time.Time `json:"date"`
 }
 
 type Option struct {
 	// inclucive
-	StartDate time.Time
+	StartDate time.Time `json:"startDate"`
 	// inclucive
-	EndDate time.Time
+	EndDate time.Time `json:"endDate"`
 }
 
 func (r *Release) String() string {

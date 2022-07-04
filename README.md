@@ -32,9 +32,6 @@ $ four-keys
 }
 $ four-keys releases
 {
-    "repository": {
-        "name": "some-repo"
-    },
     "option": {
         "startDate": "2022-01-01",
         "endDate": "2022-01-31"

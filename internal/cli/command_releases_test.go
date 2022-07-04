@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hmiyado/four-keys/internal/releases"
 	"github.com/urfave/cli/v2"
 )
 
@@ -34,11 +33,11 @@ func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrl(t *testing.T) {
 	cCtx := cli.NewContext(app, set, nil)
 	GetCommandReleases().Run(cCtx)
 
-	var releases []releases.Release
-	json.Unmarshal(output.Bytes(), &releases)
+	var cliOutput ReleasesCliOutput
+	json.Unmarshal(output.Bytes(), &cliOutput)
 	expectedReleasesNum := 60
-	if len(releases) != expectedReleasesNum {
-		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(releases))
+	if len(cliOutput.Releases) != expectedReleasesNum {
+		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
 	}
 }
 
@@ -51,11 +50,11 @@ func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntil(t *tes
 	cCtx := cli.NewContext(app, set, nil)
 	GetCommandReleases().Run(cCtx)
 
-	var releases []releases.Release
-	json.Unmarshal(output.Bytes(), &releases)
+	var cliOutput ReleasesCliOutput
+	json.Unmarshal(output.Bytes(), &cliOutput)
 	expectedReleasesNum := 3
-	if len(releases) != expectedReleasesNum {
-		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(releases))
+	if len(cliOutput.Releases) != expectedReleasesNum {
+		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
 	}
 }
 
