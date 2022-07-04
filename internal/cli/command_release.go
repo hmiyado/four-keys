@@ -40,23 +40,13 @@ func GetCommandReleases() *cli.Command {
 		Usage: "list releases",
 		Flags: CommandReleasesFlags,
 		Action: func(ctx *cli.Context) error {
-			since, until := parseOptionSinceUntil(ctx)
+			output, err := QueryReleases(ctx)
 
-			repository, error := parseOptionRepository(ctx)
-			if error != nil {
-				ctx.App.ErrWriter.Write([]byte(error.Error()))
-				return error
+			if err != nil {
+				ctx.App.ErrWriter.Write([]byte(err.Error()))
+				return err
 			}
-
-			option := &releases.Option{
-				StartDate: since,
-				EndDate:   until,
-			}
-			releases := releases.QueryReleases(repository, option)
-			releasesJson, error := json.Marshal(&ReleasesCliOutput{
-				Option:   option,
-				Releases: releases,
-			})
+			releasesJson, error := json.Marshal(output)
 			if error != nil {
 				ctx.App.ErrWriter.Write([]byte(error.Error()))
 				return error
@@ -101,4 +91,26 @@ func parseOptionRepository(ctx *cli.Context) (*git.Repository, error) {
 	}
 
 	return repository, nil
+}
+
+func QueryReleases(ctx *cli.Context) (*ReleasesCliOutput, error) {
+	since, until := parseOptionSinceUntil(ctx)
+
+	repository, error := parseOptionRepository(ctx)
+	if error != nil {
+		ctx.App.ErrWriter.Write([]byte(error.Error()))
+		return nil, error
+	}
+
+	option := &releases.Option{
+		StartDate: since,
+		EndDate:   until,
+	}
+	releases := releases.QueryReleases(repository, option)
+
+	return &ReleasesCliOutput{
+		Option:   option,
+		Releases: releases,
+	}, nil
+
 }
