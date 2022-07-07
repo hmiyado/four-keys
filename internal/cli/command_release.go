@@ -101,6 +101,10 @@ func (c *CliContextWrapper) Error(err error) {
 	c.context.App.ErrWriter.Write([]byte(err.Error()))
 }
 
+func (c *CliContextWrapper) Write(p []byte) {
+	c.context.App.Writer.Write(p)
+}
+
 func GetCommandReleases() *cli.Command {
 	return &cli.Command{
 		Name:  "releases",
@@ -120,7 +124,7 @@ func GetCommandReleases() *cli.Command {
 				context.Error(err)
 				return err
 			}
-			ctx.App.Writer.Write(releasesJson)
+			context.Write(releasesJson)
 			return nil
 		},
 	}

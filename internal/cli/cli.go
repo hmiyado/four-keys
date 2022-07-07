@@ -45,7 +45,7 @@ func defaultAction(ctx *cli.Context) error {
 		context.Error(err)
 		return err
 	}
-	ctx.App.Writer.Write(outputJson)
+	context.Write(outputJson)
 	return nil
 
 }
