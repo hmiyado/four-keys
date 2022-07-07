@@ -97,6 +97,10 @@ func (c *CliContextWrapper) Debugln(a ...any) {
 	}
 }
 
+func (c *CliContextWrapper) Error(err error) {
+	c.context.App.ErrWriter.Write([]byte(err.Error()))
+}
+
 func GetCommandReleases() *cli.Command {
 	return &cli.Command{
 		Name:  "releases",
@@ -105,16 +109,16 @@ func GetCommandReleases() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			context := &CliContextWrapper{context: ctx}
 			context.Debugln("In debug mode")
-			output, err := QueryReleases(ctx)
+			output, err := QueryReleases(context)
 
 			if err != nil {
-				ctx.App.ErrWriter.Write([]byte(err.Error()))
+				context.Error(err)
 				return err
 			}
-			releasesJson, error := json.Marshal(output)
-			if error != nil {
-				ctx.App.ErrWriter.Write([]byte(error.Error()))
-				return error
+			releasesJson, err := json.Marshal(output)
+			if err != nil {
+				context.Error(err)
+				return err
 			}
 			ctx.App.Writer.Write(releasesJson)
 			return nil
@@ -122,15 +126,14 @@ func GetCommandReleases() *cli.Command {
 	}
 }
 
-func QueryReleases(ctx *cli.Context) (*ReleasesCliOutput, error) {
-	context := &CliContextWrapper{context: ctx}
+func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
 	since := context.Since()
 	until := context.Until()
-	repository, error := context.Repository()
+	repository, err := context.Repository()
 
-	if error != nil {
-		ctx.App.ErrWriter.Write([]byte(error.Error()))
-		return nil, error
+	if err != nil {
+		context.Error(err)
+		return nil, err
 	}
 
 	option := &releases.Option{

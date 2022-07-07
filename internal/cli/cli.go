@@ -25,9 +25,10 @@ type DefaultCliOutput struct {
 }
 
 func defaultAction(ctx *cli.Context) error {
-	output, err := QueryReleases(ctx)
+	context := &CliContextWrapper{context: ctx}
+	output, err := QueryReleases(context)
 	if err != nil {
-		ctx.App.ErrWriter.Write([]byte(err.Error()))
+		context.Error(err)
 		return err
 	}
 
@@ -36,13 +37,13 @@ func defaultAction(ctx *cli.Context) error {
 	releasesCount := len(output.Releases)
 	deploymentFrequency := float64(releasesCount) / float64(daysCount)
 
-	outputJson, error := json.Marshal(&DefaultCliOutput{
+	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:              output.Option,
 		DeploymentFrequency: deploymentFrequency,
 	})
-	if error != nil {
-		ctx.App.ErrWriter.Write([]byte(error.Error()))
-		return error
+	if err != nil {
+		context.Error(err)
+		return err
 	}
 	ctx.App.Writer.Write(outputJson)
 	return nil
