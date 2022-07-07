@@ -60,6 +60,27 @@ func (c *CliContextWrapper) Until() time.Time {
 	}
 }
 
+func (c *CliContextWrapper) Repository() (*git.Repository, error) {
+	repositoryUrl := c.context.String("repository")
+	var repository *git.Repository
+	var error error
+	if repositoryUrl == "" {
+		repository, error = git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
+		if error != nil {
+			return nil, errors.New("cannot open repository at current directory")
+		}
+	} else {
+		repository, error = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+			URL: repositoryUrl,
+		})
+		if error != nil {
+			return nil, fmt.Errorf("cannot clone repository: %v", repositoryUrl)
+		}
+	}
+
+	return repository, nil
+}
+
 func (c *CliContextWrapper) Debugf(format string, a ...any) {
 	debug := c.context.Bool("debug")
 	if debug {
@@ -101,33 +122,12 @@ func GetCommandReleases() *cli.Command {
 	}
 }
 
-func parseOptionRepository(ctx *cli.Context) (*git.Repository, error) {
-	repositoryUrl := ctx.String("repository")
-	var repository *git.Repository
-	var error error
-	if repositoryUrl == "" {
-		repository, error = git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
-		if error != nil {
-			return nil, errors.New("cannot open repository at current directory")
-		}
-	} else {
-		repository, error = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-			URL: repositoryUrl,
-		})
-		if error != nil {
-			return nil, fmt.Errorf("cannot clone repository: %v", repositoryUrl)
-		}
-	}
-
-	return repository, nil
-}
-
 func QueryReleases(ctx *cli.Context) (*ReleasesCliOutput, error) {
 	context := &CliContextWrapper{context: ctx}
 	since := context.Since()
 	until := context.Until()
+	repository, error := context.Repository()
 
-	repository, error := parseOptionRepository(ctx)
 	if error != nil {
 		ctx.App.ErrWriter.Write([]byte(error.Error()))
 		return nil, error
