@@ -42,6 +42,24 @@ type CliContextWrapper struct {
 	context *cli.Context
 }
 
+func (c *CliContextWrapper) Since() time.Time {
+	optionSince := c.context.Timestamp("since")
+	if optionSince != nil {
+		return *optionSince
+	} else {
+		return time.Unix(0, 0)
+	}
+}
+
+func (c *CliContextWrapper) Until() time.Time {
+	optionSince := c.context.Timestamp("until")
+	if optionSince != nil {
+		return (*optionSince).AddDate(0, 0, 1).Add(-time.Second)
+	} else {
+		return time.Now()
+	}
+}
+
 func (c *CliContextWrapper) Debugf(format string, a ...any) {
 	debug := c.context.Bool("debug")
 	if debug {
@@ -83,21 +101,6 @@ func GetCommandReleases() *cli.Command {
 	}
 }
 
-func parseOptionSinceUntil(ctx *cli.Context) (time.Time, time.Time) {
-	optionSince := ctx.Timestamp("since")
-	optionUntil := ctx.Timestamp("until")
-	var since, until time.Time = time.Unix(0, 0), time.Now()
-	if optionSince != nil {
-		since = *optionSince
-	}
-	if optionUntil != nil {
-		until = *optionUntil
-		until = until.AddDate(0, 0, 1).Add(-time.Second)
-	}
-
-	return since, until
-}
-
 func parseOptionRepository(ctx *cli.Context) (*git.Repository, error) {
 	repositoryUrl := ctx.String("repository")
 	var repository *git.Repository
@@ -120,7 +123,9 @@ func parseOptionRepository(ctx *cli.Context) (*git.Repository, error) {
 }
 
 func QueryReleases(ctx *cli.Context) (*ReleasesCliOutput, error) {
-	since, until := parseOptionSinceUntil(ctx)
+	context := &CliContextWrapper{context: ctx}
+	since := context.Since()
+	until := context.Until()
 
 	repository, error := parseOptionRepository(ctx)
 	if error != nil {
