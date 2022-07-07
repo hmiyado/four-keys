@@ -91,3 +91,17 @@ func TestGetCommandReleaseShouldBeFailWithInvalidUntil(t *testing.T) {
 		t.Errorf("Invalid --until option does not return error of --until. erro: %v", error.Error())
 	}
 }
+
+func TestGetCommandReleaseShouldBeDebuggable(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output}
+	set := flag.NewFlagSet("test", 0)
+	_ = set.Parse([]string{"releases", "--debug"})
+
+	cCtx := cli.NewContext(app, set, nil)
+	error := GetCommandReleases().Run(cCtx)
+
+	if error != nil {
+		t.Errorf("--debug is not available log: %v", output.String())
+	}
+}

@@ -27,11 +27,35 @@ var CommandReleasesFlags []cli.Flag = []cli.Flag{
 		Usage:  "the end date to query releases (inclusive)",
 		Layout: "2006-01-02",
 	},
+	&cli.BoolFlag{
+		Name:  "debug",
+		Usage: "show debug message",
+	},
 }
 
 type ReleasesCliOutput struct {
 	Option   *releases.Option    `json:"option"`
 	Releases []*releases.Release `json:"releases"`
+}
+
+type CliContextWrapper struct {
+	context *cli.Context
+}
+
+func (c *CliContextWrapper) Debugf(format string, a ...any) {
+	debug := c.context.Bool("debug")
+	if debug {
+		fmt.Print("[Debug] ")
+		fmt.Printf(format, a...)
+	}
+}
+
+func (c *CliContextWrapper) Debugln(a ...any) {
+	debug := c.context.Bool("debug")
+	if debug {
+		fmt.Print("[Debug] ")
+		fmt.Println(a...)
+	}
 }
 
 func GetCommandReleases() *cli.Command {
@@ -40,6 +64,8 @@ func GetCommandReleases() *cli.Command {
 		Usage: "list releases",
 		Flags: CommandReleasesFlags,
 		Action: func(ctx *cli.Context) error {
+			context := &CliContextWrapper{context: ctx}
+			context.Debugln("In debug mode")
 			output, err := QueryReleases(ctx)
 
 			if err != nil {
