@@ -20,7 +20,7 @@ $ four-keys
 {
     "option": {
         "since": "2022-01-01",
-        "endDate": "2022-01-31"
+        "until": "2022-01-31"
     },
     "deploymentFrequency": 0.5,
     "leadTimeForChanges": "12:34:56.789", # future works
@@ -31,7 +31,7 @@ $ four-keys releases
 {
     "option": {
         "since": "2022-01-01",
-        "endDate": "2022-01-31"
+        "until": "2022-01-31"
     },
     "releases": [
         {

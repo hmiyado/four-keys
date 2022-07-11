@@ -24,7 +24,7 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 	var cliOutput DefaultCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
 	// intended output
-	// {"option":{"since":"2020-01-01T00:00:00Z","endDate":"2020-12-31T23:59:59Z"},"deploymentFrequency":0.00821917808219178}
+	// {"option":{"since":"2020-01-01T00:00:00Z","until":"2020-12-31T23:59:59Z"},"deploymentFrequency":0.00821917808219178}
 	if cliOutput.DeploymentFrequency < 0.00821 || cliOutput.DeploymentFrequency > 0.00822 {
 		t.Errorf("deploymentFrequency should be in (0.00821, 0.00822) but %v", cliOutput.DeploymentFrequency)
 	}
