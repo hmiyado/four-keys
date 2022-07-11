@@ -17,7 +17,7 @@ type Release struct {
 
 type Option struct {
 	// inclucive
-	StartDate time.Time `json:"startDate"`
+	Since time.Time `json:"since"`
 	// inclucive
 	EndDate time.Time `json:"endDate"`
 }
@@ -34,7 +34,7 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 	if o == nil {
 		return true
 	}
-	return time.After(o.StartDate) && time.Before(o.EndDate)
+	return time.After(o.Since) && time.Before(o.EndDate)
 }
 
 func QueryReleases(repository *git.Repository, option *Option) []*Release {

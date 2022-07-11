@@ -19,7 +19,7 @@ $ cd some-repo
 $ four-keys
 {
     "option": {
-        "startDate": "2022-01-01",
+        "since": "2022-01-01",
         "endDate": "2022-01-31"
     },
     "deploymentFrequency": 0.5,
@@ -30,7 +30,7 @@ $ four-keys
 $ four-keys releases
 {
     "option": {
-        "startDate": "2022-01-01",
+        "since": "2022-01-01",
         "endDate": "2022-01-31"
     },
     "releases": [

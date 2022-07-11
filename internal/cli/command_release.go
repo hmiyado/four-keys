@@ -143,8 +143,8 @@ func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
 	}
 
 	option := &releases.Option{
-		StartDate: since,
-		EndDate:   until,
+		Since:   since,
+		EndDate: until,
 	}
 	releases := releases.QueryReleases(repository, option)
 
