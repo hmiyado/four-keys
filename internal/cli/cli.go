@@ -32,7 +32,7 @@ func defaultAction(ctx *cli.Context) error {
 		return err
 	}
 
-	duration := output.Option.EndDate.Sub(output.Option.StartDate)
+	duration := output.Option.Until.Sub(output.Option.Since)
 	daysCount := int(duration.Hours() / 24)
 	releasesCount := len(output.Releases)
 	deploymentFrequency := float64(releasesCount) / float64(daysCount)
