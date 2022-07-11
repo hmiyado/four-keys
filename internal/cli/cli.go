@@ -11,7 +11,7 @@ func DefaultApp() *cli.App {
 	return &cli.App{
 		Name:   "four-keys",
 		Usage:  "analyze four keys metrics",
-		Flags:  CommandReleasesFlags,
+		Flags:  getCommandReleasesFlags(),
 		Action: defaultAction,
 		Commands: []*cli.Command{
 			GetCommandReleases(),

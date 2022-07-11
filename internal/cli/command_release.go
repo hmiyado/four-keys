@@ -12,25 +12,27 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var CommandReleasesFlags []cli.Flag = []cli.Flag{
-	&cli.StringFlag{
-		Name:  "repository",
-		Usage: "the remote repository url. repository will be cloned in memory. default is local repository(current directory)",
-	},
-	&cli.TimestampFlag{
-		Name:   "since",
-		Usage:  "the start date to query releases (inclusive)",
-		Layout: "2006-01-02",
-	},
-	&cli.TimestampFlag{
-		Name:   "until",
-		Usage:  "the end date to query releases (inclusive)",
-		Layout: "2006-01-02",
-	},
-	&cli.BoolFlag{
-		Name:  "debug",
-		Usage: "show debug message",
-	},
+func getCommandReleasesFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:  "repository",
+			Usage: "the remote repository url. repository will be cloned in memory. default is local repository(current directory)",
+		},
+		&cli.TimestampFlag{
+			Name:   "since",
+			Usage:  "the start date to query releases (inclusive)",
+			Layout: "2006-01-02",
+		},
+		&cli.TimestampFlag{
+			Name:   "until",
+			Usage:  "the end date to query releases (inclusive)",
+			Layout: "2006-01-02",
+		},
+		&cli.BoolFlag{
+			Name:  "debug",
+			Usage: "show debug message",
+		},
+	}
 }
 
 type ReleasesCliOutput struct {
@@ -109,7 +111,7 @@ func GetCommandReleases() *cli.Command {
 	return &cli.Command{
 		Name:  "releases",
 		Usage: "list releases",
-		Flags: CommandReleasesFlags,
+		Flags: getCommandReleasesFlags(),
 		Action: func(ctx *cli.Context) error {
 			context := &CliContextWrapper{context: ctx}
 			context.Debugln("In debug mode")
