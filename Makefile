@@ -6,3 +6,7 @@ build:
 run:
 	make build
 	./four-keys
+
+.PHONY: test
+test:
+	go test -count=1 ./...
