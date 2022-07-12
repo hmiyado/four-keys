@@ -12,10 +12,9 @@ import (
 )
 
 type Release struct {
-	Tag  string    `json:"tag"`
-	Date time.Time `json:"date"`
-	// LeadTimeForChanges indicates
-	LeadTimeForChanges float64 `json:"leadTimeForChanges"`
+	Tag                string        `json:"tag"`
+	Date               time.Time     `json:"date"`
+	LeadTimeForChanges time.Duration `json:"leadTimeForChanges"`
 }
 
 type Option struct {
@@ -76,7 +75,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			releases = append(releases, &Release{
 				Tag:                source.tag.Name().Short(),
 				Date:               source.commit.Committer.When,
-				LeadTimeForChanges: leadTimeForChanges.Hours(),
+				LeadTimeForChanges: *leadTimeForChanges,
 			})
 		}
 	}
