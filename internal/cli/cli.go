@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/hmiyado/four-keys/internal/releases"
 	"github.com/urfave/cli/v2"
@@ -22,6 +23,7 @@ func DefaultApp() *cli.App {
 type DefaultCliOutput struct {
 	Option              *releases.Option `json:"option"`
 	DeploymentFrequency float64          `json:"deploymentFrequency"`
+	LeadTimeForChanges  time.Duration    `json:"leadTimeForChanges"`
 }
 
 func defaultAction(ctx *cli.Context) error {
@@ -40,6 +42,7 @@ func defaultAction(ctx *cli.Context) error {
 	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:              output.Option,
 		DeploymentFrequency: deploymentFrequency,
+		LeadTimeForChanges:  getMeanLeadTimeForChanges(output),
 	})
 	if err != nil {
 		context.Error(err)
@@ -48,4 +51,15 @@ func defaultAction(ctx *cli.Context) error {
 	context.Write(outputJson)
 	return nil
 
+}
+
+func getMeanLeadTimeForChanges(output *ReleasesCliOutput) time.Duration {
+	if len(output.Releases) == 0 {
+		return time.Duration(0)
+	}
+	sum := time.Duration(0)
+	for _, release := range output.Releases {
+		sum = release.LeadTimeForChanges + sum
+	}
+	return time.Duration(int64(sum) / int64(len(output.Releases)))
 }
