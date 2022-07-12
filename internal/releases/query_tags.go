@@ -8,11 +8,13 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type Release struct {
-	Tag  string    `json:"tag"`
-	Date time.Time `json:"date"`
+	Tag                string        `json:"tag"`
+	Date               time.Time     `json:"date"`
+	LeadTimeForChanges time.Duration `json:"leadTimeForChanges"`
 }
 
 type Option struct {
@@ -37,18 +39,46 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 	return time.After(o.Since) && time.Before(o.Until)
 }
 
+// QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
+	type ReleaseSource struct {
+		tag    *plumbing.Reference
+		commit *object.Commit
+	}
 	tags := QueryTags(repository)
+	sources := make([]ReleaseSource, 0)
+	for _, tag := range tags {
+		commit, err := repository.CommitObject(tag.Hash())
+		if err != nil {
+			continue
+		}
+		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
+	}
+	sort.Slice(sources, func(i, j int) bool {
+		return sources[i].commit.Committer.When.Before(sources[j].commit.Committer.When)
+	})
+
 	releases := make([]*Release, 0)
-	for i := 0; i < len(tags); i++ {
-		tag := tags[i]
-		commit, _ := repository.CommitObject(tag.Hash())
-		commitDate := commit.Author.When
-		if option.isInTimeRange(commitDate) {
-			releases = append(releases, &Release{Tag: tag.Name().Short(), Date: commitDate})
+	for i, source := range sources {
+		if option.isInTimeRange(source.commit.Committer.When) {
+			var preCommit *object.Commit
+			if i == 0 {
+				preCommit = nil
+			} else {
+				preCommit = sources[i-1].commit
+			}
+			leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
+			if leadTimeForChanges == nil {
+				zero := time.Duration(0)
+				leadTimeForChanges = &zero
+			}
+			releases = append(releases, &Release{
+				Tag:                source.tag.Name().Short(),
+				Date:               source.commit.Committer.When,
+				LeadTimeForChanges: *leadTimeForChanges,
+			})
 		}
 	}
-	sort.Slice(releases, func(i, j int) bool { return releases[i].Date.Before(releases[j].Date) })
 	return releases
 }
 
