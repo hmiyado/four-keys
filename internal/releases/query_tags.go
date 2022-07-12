@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 type Release struct {
@@ -37,18 +38,31 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 	return time.After(o.Since) && time.Before(o.Until)
 }
 
+// QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
+	type ReleaseSource struct {
+		tag    *plumbing.Reference
+		commit *object.Commit
+	}
 	tags := QueryTags(repository)
+	sources := make([]ReleaseSource, 0)
+	for _, tag := range tags {
+		commit, err := repository.CommitObject(tag.Hash())
+		if err != nil {
+			continue
+		}
+		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
+	}
+	sort.Slice(sources, func(i, j int) bool {
+		return sources[i].commit.Committer.When.Before(sources[j].commit.Committer.When)
+	})
+
 	releases := make([]*Release, 0)
-	for i := 0; i < len(tags); i++ {
-		tag := tags[i]
-		commit, _ := repository.CommitObject(tag.Hash())
-		commitDate := commit.Author.When
-		if option.isInTimeRange(commitDate) {
-			releases = append(releases, &Release{Tag: tag.Name().Short(), Date: commitDate})
+	for i, source := range sources {
+		if option.isInTimeRange(source.commit.Committer.When) {
+			releases = append(releases, &Release{Tag: sources[i].tag.Name().Short(), Date: source.commit.Committer.When})
 		}
 	}
-	sort.Slice(releases, func(i, j int) bool { return releases[i].Date.Before(releases[j].Date) })
 	return releases
 }
 
