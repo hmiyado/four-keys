@@ -20,7 +20,7 @@ func TestGetLeadTimeForChangesShouldReturnLeadTime(t *testing.T) {
 	}
 
 	duration := GetLeadTimeForChanges(repository, commit5_0_0, commit5_1_0)
-	expected, _ := time.ParseDuration("1677h6m36s")
+	expected, _ := time.ParseDuration("1605h57m40s")
 	if isNearBy(duration.Minutes(), expected.Minutes(), 0.01) {
 		return
 	}

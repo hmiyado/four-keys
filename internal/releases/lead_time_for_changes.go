@@ -18,9 +18,10 @@ func GetLeadTimeForChanges(repository *git.Repository, commit1 *object.Commit, c
 	} else {
 		return nil
 	}
+	afterAncestor := ancestor.Committer.When.AddDate(0, 0, 1)
 	iter, err := repository.Log(&git.LogOptions{
 		From:  child.Hash,
-		Since: &ancestor.Committer.When,
+		Since: &afterAncestor,
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
