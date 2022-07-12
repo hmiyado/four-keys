@@ -5,7 +5,7 @@ measure four keys metrics
 $$
 DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
 \\
-LeadTimeForChanges = average( max( (ReleaseDateTime) - (CommitDateTime) ) )
+LeadTimeForChanges = mean( (ReleaseDateTime) - (DateTimeOfFirstCommitAfterPreviousRelease) )
 \\
 TimeToRestoreService = average( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
 \\
@@ -23,7 +23,7 @@ $ four-keys
         "until": "2022-01-31"
     },
     "deploymentFrequency": 0.5,
-    "leadTimeForChanges": "12:34:56.789", # future works
+    "leadTimeForChanges": "12165952333333333", # leadTimeForChanges in nanosec
     "timeToRestoreServices": "00:12:34.567", # future works
     "changeFailureRate": 0.50 # future works
 }
@@ -37,7 +37,7 @@ $ four-keys releases
         {
             "tag": "v1.0.0",
             "date": "2022-01-05 00:00",
-            "leadTimeForChanges": ":19417077000000000",
+            "leadTimeForChanges": ":19417077000000000", # leadTimeForChanges in nanosec
             "result": { # future works
                 "type": "success"
             }
