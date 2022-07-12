@@ -14,6 +14,8 @@ import (
 type Release struct {
 	Tag  string    `json:"tag"`
 	Date time.Time `json:"date"`
+	// LeadTimeForChanges indicates
+	LeadTimeForChanges float64 `json:"leadTimeForChanges"`
 }
 
 type Option struct {
@@ -60,7 +62,22 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	releases := make([]*Release, 0)
 	for i, source := range sources {
 		if option.isInTimeRange(source.commit.Committer.When) {
-			releases = append(releases, &Release{Tag: sources[i].tag.Name().Short(), Date: source.commit.Committer.When})
+			var preCommit *object.Commit
+			if i == 0 {
+				preCommit = nil
+			} else {
+				preCommit = sources[i-1].commit
+			}
+			leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
+			if leadTimeForChanges == nil {
+				zero := time.Duration(0)
+				leadTimeForChanges = &zero
+			}
+			releases = append(releases, &Release{
+				Tag:                source.tag.Name().Short(),
+				Date:               source.commit.Committer.When,
+				LeadTimeForChanges: leadTimeForChanges.Hours(),
+			})
 		}
 	}
 	return releases
