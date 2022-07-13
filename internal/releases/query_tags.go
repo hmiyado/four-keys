@@ -22,8 +22,8 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until         time.Time `json:"until"`
-	IgnorePattern string    `json:"ignorePattern"`
+	Until         time.Time      `json:"until"`
+	IgnorePattern *regexp.Regexp `json:"ignorePattern"`
 }
 
 func (r *Release) String() string {
@@ -45,17 +45,7 @@ func (o *Option) shouldIgnore(name string) bool {
 	if o == nil {
 		return false
 	}
-	if o.IgnorePattern == "" {
-		// empty string means no ignore pattern
-		// but empty string matches any string
-		// so check it and return early
-		return false
-	}
-	ignoreMatcher, err := regexp.Compile(o.IgnorePattern)
-	if err != nil {
-		return false
-	}
-	return ignoreMatcher.MatchString(name)
+	return o.IgnorePattern.MatchString(name)
 }
 
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)

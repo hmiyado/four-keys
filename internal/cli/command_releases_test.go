@@ -98,6 +98,23 @@ func TestGetCommandReleaseShouldBeFailWithInvalidUntil(t *testing.T) {
 	}
 }
 
+func TestGetCommandReleaseShouldBeFailWithInvalidIgnorePattern(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	errOutput := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output, ErrWriter: errOutput}
+	set := flag.NewFlagSet("test", 0)
+	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--ignorePattern", "*"})
+
+	cCtx := cli.NewContext(app, set, nil)
+	error := GetCommandReleases().Run(cCtx)
+
+	if error == nil {
+		t.Errorf("Invalid --until option does not return error. log: %v", output.String())
+	}
+	if !strings.Contains(error.Error(), "[invalid ignore pattern]") {
+		t.Errorf("Invalid --until option does not return error of --until. error: %v", error.Error())
+	}
+}
 func TestGetCommandReleaseShouldBeDebuggable(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}

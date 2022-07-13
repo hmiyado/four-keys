@@ -2,6 +2,7 @@ package releases
 
 import (
 	"os"
+	"regexp"
 	"sort"
 	"testing"
 	"time"
@@ -108,10 +109,11 @@ func TestQueryReleasesShouldReturnReleasesWithSpecifiedTimeRange(t *testing.T) {
 }
 
 func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
+	pattern, _ := regexp.Compile(`v5\.1\.0|v5\.2\.0`)
 	releases := QueryReleases(repository, &Option{
 		Since:         time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		Until:         time.Date(2020, 12, 31, 23, 59, 59, 999, time.UTC),
-		IgnorePattern: "v5\\.1\\.0|v5\\.2\\.0",
+		IgnorePattern: pattern,
 	})
 	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60))}
 	expectedTags := []*Release{tag5_0_0}
