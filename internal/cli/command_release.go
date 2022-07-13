@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -27,6 +28,10 @@ func getCommandReleasesFlags() []cli.Flag {
 			Name:   "until",
 			Usage:  "the end date to query releases (inclusive)",
 			Layout: "2006-01-02",
+		},
+		&cli.StringFlag{
+			Name:  "ignorePattern",
+			Usage: "ignore releases that matches the pattern(regex)",
 		},
 		&cli.BoolFlag{
 			Name:  "debug",
@@ -60,6 +65,14 @@ func (c *CliContextWrapper) Until() time.Time {
 	} else {
 		return time.Now()
 	}
+}
+
+func (c *CliContextWrapper) IgnorePattern() (*regexp.Regexp, error) {
+	pattern := c.context.String("ignorePattern")
+	if pattern == "" {
+		return nil, nil
+	}
+	return regexp.Compile(pattern)
 }
 
 func (c *CliContextWrapper) Repository() (*git.Repository, error) {
@@ -133,18 +146,23 @@ func GetCommandReleases() *cli.Command {
 }
 
 func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
-	since := context.Since()
-	until := context.Until()
 	repository, err := context.Repository()
-
 	if err != nil {
 		context.Error(err)
 		return nil, err
 	}
 
+	ignorePattern, err := context.IgnorePattern()
+	if err != nil {
+		wrappedError := fmt.Errorf("[invalid ignore pattern] %v", err)
+		context.Error(wrappedError)
+		return nil, wrappedError
+	}
+
 	option := &releases.Option{
-		Since: since,
-		Until: until,
+		Since:         context.Since(),
+		Until:         context.Until(),
+		IgnorePattern: ignorePattern,
 	}
 	releases := releases.QueryReleases(repository, option)
 

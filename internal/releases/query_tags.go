@@ -2,6 +2,7 @@ package releases
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -21,7 +22,8 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until time.Time `json:"until"`
+	Until         time.Time      `json:"until"`
+	IgnorePattern *regexp.Regexp `json:"ignorePattern"`
 }
 
 func (r *Release) String() string {
@@ -37,6 +39,13 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 		return true
 	}
 	return time.After(o.Since) && time.Before(o.Until)
+}
+
+func (o *Option) shouldIgnore(name string) bool {
+	if o == nil || o.IgnorePattern == nil {
+		return false
+	}
+	return o.IgnorePattern.MatchString(name)
 }
 
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
@@ -60,24 +69,30 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 
 	releases := make([]*Release, 0)
 	for i, source := range sources {
-		if option.isInTimeRange(source.commit.Committer.When) {
-			var preCommit *object.Commit
-			if i == 0 {
-				preCommit = nil
-			} else {
-				preCommit = sources[i-1].commit
-			}
-			leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
-			if leadTimeForChanges == nil {
-				zero := time.Duration(0)
-				leadTimeForChanges = &zero
-			}
-			releases = append(releases, &Release{
-				Tag:                source.tag.Name().Short(),
-				Date:               source.commit.Committer.When,
-				LeadTimeForChanges: *leadTimeForChanges,
-			})
+		if option.shouldIgnore(source.tag.Name().Short()) {
+			continue
 		}
+
+		if !option.isInTimeRange(source.commit.Committer.When) {
+			continue
+		}
+
+		var preCommit *object.Commit
+		if i == 0 {
+			preCommit = nil
+		} else {
+			preCommit = sources[i-1].commit
+		}
+		leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
+		if leadTimeForChanges == nil {
+			zero := time.Duration(0)
+			leadTimeForChanges = &zero
+		}
+		releases = append(releases, &Release{
+			Tag:                source.tag.Name().Short(),
+			Date:               source.commit.Committer.When,
+			LeadTimeForChanges: *leadTimeForChanges,
+		})
 	}
 	return releases
 }
