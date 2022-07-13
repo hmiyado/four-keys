@@ -2,6 +2,7 @@ package releases
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -21,7 +22,8 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until time.Time `json:"until"`
+	Until         time.Time `json:"until"`
+	IgnorePattern string    `json:"ignorePattern"`
 }
 
 func (r *Release) String() string {
@@ -37,6 +39,23 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 		return true
 	}
 	return time.After(o.Since) && time.Before(o.Until)
+}
+
+func (o *Option) shouldIgnore(name string) bool {
+	if o == nil {
+		return false
+	}
+	if o.IgnorePattern == "" {
+		// empty string means no ignore pattern
+		// but empty string matches any string
+		// so check it and return early
+		return false
+	}
+	ignoreMatcher, err := regexp.Compile(o.IgnorePattern)
+	if err != nil {
+		return false
+	}
+	return ignoreMatcher.MatchString(name)
 }
 
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
@@ -60,6 +79,10 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 
 	releases := make([]*Release, 0)
 	for i, source := range sources {
+		if option.shouldIgnore(source.tag.Name().Short()) {
+			continue
+		}
+
 		if option.isInTimeRange(source.commit.Committer.When) {
 			var preCommit *object.Commit
 			if i == 0 {
