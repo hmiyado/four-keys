@@ -28,6 +28,10 @@ func getCommandReleasesFlags() []cli.Flag {
 			Usage:  "the end date to query releases (inclusive)",
 			Layout: "2006-01-02",
 		},
+		&cli.StringFlag{
+			Name:  "ignorePattern",
+			Usage: "ignore releases that matches the pattern(regex)",
+		},
 		&cli.BoolFlag{
 			Name:  "debug",
 			Usage: "show debug message",
@@ -60,6 +64,10 @@ func (c *CliContextWrapper) Until() time.Time {
 	} else {
 		return time.Now()
 	}
+}
+
+func (c *CliContextWrapper) IgnorePattern() string {
+	return c.context.String("ignorePattern")
 }
 
 func (c *CliContextWrapper) Repository() (*git.Repository, error) {
@@ -133,8 +141,6 @@ func GetCommandReleases() *cli.Command {
 }
 
 func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
-	since := context.Since()
-	until := context.Until()
 	repository, err := context.Repository()
 
 	if err != nil {
@@ -143,8 +149,9 @@ func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
 	}
 
 	option := &releases.Option{
-		Since: since,
-		Until: until,
+		Since:         context.Since(),
+		Until:         context.Until(),
+		IgnorePattern: context.IgnorePattern(),
 	}
 	releases := releases.QueryReleases(repository, option)
 
