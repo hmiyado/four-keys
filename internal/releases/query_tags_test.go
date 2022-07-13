@@ -107,6 +107,28 @@ func TestQueryReleasesShouldReturnReleasesWithSpecifiedTimeRange(t *testing.T) {
 	t.Errorf("releases does not have specified")
 }
 
+func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
+	releases := QueryReleases(repository, &Option{
+		Since:         time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		Until:         time.Date(2020, 12, 31, 23, 59, 59, 999, time.UTC),
+		IgnorePattern: "v5\\.1\\.0|v5\\.2\\.0",
+	})
+	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60))}
+	expectedTags := []*Release{tag5_0_0}
+
+	if len(releases) != len(expectedTags) {
+		t.Errorf("releases does not have expected tag num. expected: %v. actual: %v", len(expectedTags), len(releases))
+		return
+	}
+
+	if releases[0].Tag == tag5_0_0.Tag {
+		return
+	}
+
+	t.Logf("expected: %v, actual: %v", tag5_0_0, releases[0])
+	t.Errorf("releases does not have specified")
+}
+
 func TestQueryTagsShouldHaveTags(t *testing.T) {
 	tags := QueryTags(repository)
 	expectedTagNum := 60
