@@ -42,7 +42,7 @@ func (o *Option) isInTimeRange(time time.Time) bool {
 }
 
 func (o *Option) shouldIgnore(name string) bool {
-	if o == nil {
+	if o == nil || o.IgnorePattern == nil {
 		return false
 	}
 	return o.IgnorePattern.MatchString(name)
