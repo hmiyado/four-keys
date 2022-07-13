@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/hmiyado/four-keys/internal/util"
 )
 
 func TestGetLeadTimeForChangesShouldReturnLeadTime(t *testing.T) {
@@ -21,7 +22,7 @@ func TestGetLeadTimeForChangesShouldReturnLeadTime(t *testing.T) {
 
 	duration := GetLeadTimeForChanges(repository, commit5_0_0, commit5_1_0)
 	expected, _ := time.ParseDuration("1605h57m40s")
-	if isNearBy(duration.Minutes(), expected.Minutes(), 0.01) {
+	if util.IsNearBy(duration.Minutes(), expected.Minutes(), 0.01) {
 		return
 	}
 	t.Error("should be x0.99-1.01 of ", expected, " but ", duration)
@@ -82,9 +83,4 @@ func TestGetLeadTimeForChangesShouldReturn0WhenCommitsAreNil(t *testing.T) {
 		return
 	}
 	t.Error(duration, "should be equal to ", 0)
-}
-
-// isNearBy checks actual is in range of [expected*(1-epsilon), expected*(1+epsiolon)]
-func isNearBy(actual float64, expected float64, epsilon float64) bool {
-	return actual >= expected*(1-epsilon) && actual <= expected*(1+epsilon)
 }

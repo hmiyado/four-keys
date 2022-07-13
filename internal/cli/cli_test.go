@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/hmiyado/four-keys/internal/util"
 	"github.com/urfave/cli/v2"
 )
 
@@ -29,10 +30,10 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 	//   "deploymentFrequency":0.00821917808219178,
 	//   "leadTimeForChanges":12165952333333333
 	// }
-	if !isNearBy(cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01) {
+	if !util.IsNearBy(cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01) {
 		t.Errorf("deploymentFrequency should be near by 0.00821917808219178 but %v", cliOutput.DeploymentFrequency)
 	}
-	if !isNearBy(float64(cliOutput.LeadTimeForChanges), 12165952333333333, 0.01) {
+	if !util.IsNearBy(float64(cliOutput.LeadTimeForChanges), 12165952333333333, 0.01) {
 		t.Errorf("deploymentFrequency should be near by but %v", cliOutput.DeploymentFrequency)
 	}
 }
@@ -51,9 +52,4 @@ func TestDefaultAppShouldRunWithoutOption(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-}
-
-// isNearBy checks actual is in range of [expected*(1-epsilon), expected*(1+epsiolon)]
-func isNearBy(actual float64, expected float64, epsilon float64) bool {
-	return actual >= expected*(1-epsilon) && actual <= expected*(1+epsilon)
 }
