@@ -28,7 +28,7 @@ func TestGetLeadTimeForChangesShouldReturnLeadTime(t *testing.T) {
 	t.Error("should be x0.99-1.01 of ", expected, " but ", duration)
 }
 
-func TestGetLeadTimeForChangesShouldReturnSameTimeForSwitchingCommits(t *testing.T) {
+func TestGetLeadTimeForChangesShouldReturnNilWhenNewerCommitIsNotNewer(t *testing.T) {
 	// https://github.com/go-git/go-git/releases/tag/v5.0.0
 	commit5_0_0, err1 := repository.CommitObject(plumbing.NewHash("9d0f15c4fa712cdacfa3887e9baac918f093fbf6"))
 	if err1 != nil {
@@ -40,12 +40,12 @@ func TestGetLeadTimeForChangesShouldReturnSameTimeForSwitchingCommits(t *testing
 		t.Error(err1.Error())
 	}
 
-	duration1 := GetLeadTimeForChanges(repository, commit5_0_0, commit5_1_0)
-	duration2 := GetLeadTimeForChanges(repository, commit5_1_0, commit5_0_0)
-	if duration1.Minutes() == duration2.Minutes() {
+	// commit5_1_0 is newer than commit5_0_0, but argument is swapped newer and older
+	duration := GetLeadTimeForChanges(repository, commit5_1_0, commit5_0_0)
+	if duration == nil {
 		return
 	}
-	t.Error(duration1, "should be equal to ", duration2)
+	t.Error("should be equal to nil but ", duration)
 }
 
 func TestGetLeadTimeForChangesShouldReturn0ForSameCommits(t *testing.T) {
@@ -77,10 +77,10 @@ func TestGetLeadTimeForChangesShouldRunWithInitialCommit(t *testing.T) {
 	t.Error(duration, "should be equal to ", expected)
 }
 
-func TestGetLeadTimeForChangesShouldReturn0WhenCommitsAreNil(t *testing.T) {
+func TestGetLeadTimeForChangesShouldReturnNilWhenNewerCommitIsNil(t *testing.T) {
 	duration := GetLeadTimeForChanges(repository, nil, nil)
-	if duration.Minutes() == 0 {
+	if duration == nil {
 		return
 	}
-	t.Error(duration, "should be equal to ", 0)
+	t.Error("should be equal to nil but", duration)
 }
