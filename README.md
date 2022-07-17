@@ -23,7 +23,10 @@ $ four-keys
         "until": "2022-01-31"
     },
     "deploymentFrequency": 0.5,
-    "leadTimeForChanges": "12165952333333333", # leadTimeForChanges in nanosec
+    "leadTimeForChanges": {
+        "value": "98.84710648148149",
+        "unit": "day"
+    },
     "timeToRestoreServices": "00:12:34.567", # future works
     "changeFailureRate": 0.50 # future works
 }
