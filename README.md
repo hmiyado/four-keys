@@ -38,14 +38,15 @@ $ four-keys releases
     },
     "releases": [
         {
-            "tag": "v1.0.0",
-            "date": "2022-01-05 00:00",
+            "tag": "v1.0.2",
+            "date": "2022-01-15 00:00",
             "leadTimeForChanges": {
-                "value": "224.73468749999998",
+                "value": "130.77916666666667",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "success"
+            "result": {
+                "isSuccess": true,
+                "timeToRestoreService": "120:00:00.000" # future works
             }
         },
         {
@@ -55,20 +56,20 @@ $ four-keys releases
                 "value": "66.9150462962963",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "failure"
+            "result": {
+                "isSucecss": false
             }
         },
+
         {
-            "tag": "v1.0.2",
-            "date": "2022-01-15 00:00",
+            "tag": "v1.0.0",
+            "date": "2022-01-05 00:00",
             "leadTimeForChanges": {
-                "value": "130.77916666666667",
+                "value": "224.73468749999998",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "success",
-                "timeToRestoreService": "120:00:00.000"
+            "result": {
+                "isSuccess": true
             }
         }
     ]

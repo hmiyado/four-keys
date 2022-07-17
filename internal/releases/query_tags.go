@@ -16,6 +16,11 @@ type Release struct {
 	Tag                string        `json:"tag"`
 	Date               time.Time     `json:"date"`
 	LeadTimeForChanges time.Duration `json:"leadTimeForChanges"`
+	Result             ReleaseResult `json:"result"`
+}
+
+type ReleaseResult struct {
+	IsSuccess bool
 }
 
 type Option struct {
@@ -31,7 +36,7 @@ func (r *Release) String() string {
 }
 
 func (r *Release) Equal(another *Release) bool {
-	return r.Tag == another.Tag && r.Date.Equal(another.Date)
+	return r.Tag == another.Tag && r.Date.Equal(another.Date) && r.Result == another.Result
 }
 
 func (o *Option) isInTimeRange(time time.Time) bool {
@@ -64,7 +69,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
 	}
 	sort.Slice(sources, func(i, j int) bool {
-		return sources[i].commit.Committer.When.Before(sources[j].commit.Committer.When)
+		return sources[i].commit.Committer.When.After(sources[j].commit.Committer.When)
 	})
 
 	releases := make([]*Release, 0)
@@ -78,20 +83,33 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		}
 
 		var preCommit *object.Commit
-		if i == 0 {
+		if i == len(sources)-1 {
 			preCommit = nil
 		} else {
-			preCommit = sources[i-1].commit
+			preCommit = sources[i+1].commit
 		}
 		leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
 		if leadTimeForChanges == nil {
 			zero := time.Duration(0)
 			leadTimeForChanges = &zero
 		}
+
+		var isSuccess bool
+		if i == 0 {
+			// it is considered that the newest release is success
+			isSuccess = true
+		} else {
+			postCommit := sources[i-1].commit
+			isRestored := isRestoredRelease(repository, source.commit, postCommit)
+			isSuccess = !isRestored
+		}
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: *leadTimeForChanges,
+			Result: ReleaseResult{
+				IsSuccess: isSuccess,
+			},
 		})
 	}
 	return releases
