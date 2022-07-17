@@ -28,7 +28,7 @@ $ four-keys
         "unit": "day"
     },
     "timeToRestoreServices": "00:12:34.567", # future works
-    "changeFailureRate": 0.50 # future works
+    "changeFailureRate": 0.50
 }
 $ four-keys releases
 {
