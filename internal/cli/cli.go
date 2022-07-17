@@ -28,21 +28,26 @@ type DefaultCliOutput struct {
 
 func defaultAction(ctx *cli.Context) error {
 	context := &CliContextWrapper{context: ctx}
-	output, err := QueryReleases(context)
+	releases, err := QueryReleases(context)
+	if err != nil {
+		context.Error(err)
+		return err
+	}
+	option, err := context.Option()
 	if err != nil {
 		context.Error(err)
 		return err
 	}
 
-	duration := output.Option.Until.Sub(output.Option.Since)
+	duration := option.Until.Sub(option.Since)
 	daysCount := int(duration.Hours() / 24)
-	releasesCount := len(output.Releases)
+	releasesCount := len(releases)
 	deploymentFrequency := float64(releasesCount) / float64(daysCount)
 
 	outputJson, err := json.Marshal(&DefaultCliOutput{
-		Option:              output.Option,
+		Option:              option,
 		DeploymentFrequency: deploymentFrequency,
-		LeadTimeForChanges:  getLeadTimeForChangesOutput(getMeanLeadTimeForChanges(output)),
+		LeadTimeForChanges:  getLeadTimeForChangesOutput(getMeanLeadTimeForChanges(releases)),
 	})
 	if err != nil {
 		context.Error(err)
@@ -53,13 +58,13 @@ func defaultAction(ctx *cli.Context) error {
 
 }
 
-func getMeanLeadTimeForChanges(output *ReleasesCliOutput) time.Duration {
-	if len(output.Releases) == 0 {
+func getMeanLeadTimeForChanges(release []*releases.Release) time.Duration {
+	if len(release) == 0 {
 		return time.Duration(0)
 	}
 	sum := time.Duration(0)
-	for _, release := range output.Releases {
+	for _, release := range release {
 		sum = release.LeadTimeForChanges + sum
 	}
-	return time.Duration(int64(sum) / int64(len(output.Releases)))
+	return time.Duration(int64(sum) / int64(len(release)))
 }

@@ -42,7 +42,13 @@ func getCommandReleasesFlags() []cli.Flag {
 
 type ReleasesCliOutput struct {
 	Option   *releases.Option    `json:"option"`
-	Releases []*releases.Release `json:"releases"`
+	Releases []*ReleaseCliOutput `json:"releases"`
+}
+
+type ReleaseCliOutput struct {
+	Tag                string                   `json:"tag"`
+	Date               time.Time                `json:"date"`
+	LeadTimeForChanges LeadTimeForChangesOutput `json:"leadTimeForChanges"`
 }
 
 type CliContextWrapper struct {
@@ -96,6 +102,21 @@ func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 	return repository, nil
 }
 
+func (c *CliContextWrapper) Option() (*releases.Option, error) {
+	ignorePattern, err := c.IgnorePattern()
+	if err != nil {
+		wrappedError := fmt.Errorf("[invalid ignore pattern] %v", err)
+		c.Error(wrappedError)
+		return nil, wrappedError
+	}
+
+	return &releases.Option{
+		Since:         c.Since(),
+		Until:         c.Until(),
+		IgnorePattern: ignorePattern,
+	}, nil
+}
+
 func (c *CliContextWrapper) Debugf(format string, a ...any) {
 	debug := c.context.Bool("debug")
 	if debug {
@@ -128,11 +149,20 @@ func GetCommandReleases() *cli.Command {
 		Action: func(ctx *cli.Context) error {
 			context := &CliContextWrapper{context: ctx}
 			context.Debugln("In debug mode")
-			output, err := QueryReleases(context)
-
+			releases, err := QueryReleases(context)
 			if err != nil {
 				context.Error(err)
 				return err
+			}
+			option, err := context.Option()
+			if err != nil {
+				context.Error(err)
+				return err
+			}
+
+			output := &ReleasesCliOutput{
+				Option:   option,
+				Releases: mapReleasesToCliOutput(releases),
 			}
 			releasesJson, err := json.Marshal(output)
 			if err != nil {
@@ -145,30 +175,28 @@ func GetCommandReleases() *cli.Command {
 	}
 }
 
-func QueryReleases(context *CliContextWrapper) (*ReleasesCliOutput, error) {
+func QueryReleases(context *CliContextWrapper) ([]*releases.Release, error) {
 	repository, err := context.Repository()
 	if err != nil {
 		context.Error(err)
 		return nil, err
 	}
 
-	ignorePattern, err := context.IgnorePattern()
+	option, err := context.Option()
 	if err != nil {
-		wrappedError := fmt.Errorf("[invalid ignore pattern] %v", err)
-		context.Error(wrappedError)
-		return nil, wrappedError
+		return nil, err
 	}
+	return releases.QueryReleases(repository, option), nil
+}
 
-	option := &releases.Option{
-		Since:         context.Since(),
-		Until:         context.Until(),
-		IgnorePattern: ignorePattern,
+func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
+	output := make([]*ReleaseCliOutput, 0)
+	for _, release := range releases {
+		output = append(output, &ReleaseCliOutput{
+			Tag:                release.Tag,
+			Date:               release.Date,
+			LeadTimeForChanges: getLeadTimeForChangesOutput(release.LeadTimeForChanges),
+		})
 	}
-	releases := releases.QueryReleases(repository, option)
-
-	return &ReleasesCliOutput{
-		Option:   option,
-		Releases: releases,
-	}, nil
-
+	return output
 }
