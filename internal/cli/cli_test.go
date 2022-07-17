@@ -28,15 +28,30 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 	// {
 	//   "option":{"since":"2020-01-01T00:00:00Z","until":"2020-12-31T23:59:59Z"},
 	//   "deploymentFrequency":0.00821917808219178,
-	//   "leadTimeForChanges":12165952333333333
+	//   "leadTimeForChanges":{"value":140.8096334876543,"unit":"day"},
+	//   "changeFailureRate":0
 	// }
-	if !util.IsNearBy(cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01) {
-		t.Errorf("deploymentFrequency should be near by 0.00821917808219178 but %v", cliOutput.DeploymentFrequency)
+	util.AssertIsNearBy(t, cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01)
+	util.AssertIsNearBy(t, cliOutput.LeadTimeForChanges.Present(), 140.8096334876543, 0.01)
+	util.AssertIsNearBy(t, cliOutput.ChangeFailureRate, 0, 0.01)
+}
+
+func TestDefaultAppShouldReturnChangeFailureRate(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	defaltApp := DefaultApp()
+	testApp := &cli.App{
+		Flags:  defaltApp.Flags,
+		Action: defaltApp.Action,
+		Writer: output,
 	}
-	if !util.IsNearBy(cliOutput.LeadTimeForChanges.Present(), 140.8096334876543, 0.01) {
-		t.Log(output)
-		t.Errorf("deploymentFrequency should be near by but %v", cliOutput.LeadTimeForChanges)
+
+	err := testApp.Run([]string{"four-keys", "--repository", "https://github.com/go-git/go-git", "--since", "2015-12-01", "--until", "2016-05-31"})
+	if err != nil {
+		t.Errorf(err.Error())
 	}
+	var cliOutput DefaultCliOutput
+	json.Unmarshal(output.Bytes(), &cliOutput)
+	util.AssertIsNearBy(t, cliOutput.ChangeFailureRate, 0.08333333333333333, 0.01)
 }
 
 func TestDefaultAppShouldRunWithoutOption(t *testing.T) {
