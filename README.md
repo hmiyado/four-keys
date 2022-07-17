@@ -40,7 +40,10 @@ $ four-keys releases
         {
             "tag": "v1.0.0",
             "date": "2022-01-05 00:00",
-            "leadTimeForChanges": ":19417077000000000", # leadTimeForChanges in nanosec
+            "leadTimeForChanges": {
+                "value": "224.73468749999998",
+                "unit": "day"
+            },
             "result": { # future works
                 "type": "success"
             }
@@ -48,7 +51,10 @@ $ four-keys releases
         {
             "tag": "v1.0.1",
             "date": "2022-01-10 00:00",
-            "leadTimeForChanges": ":19417077000000000",
+            "leadTimeForChanges": {
+                "value": "66.9150462962963",
+                "unit": "day"
+            },
             "result": { # future works
                 "type": "failure"
             }
@@ -56,7 +62,10 @@ $ four-keys releases
         {
             "tag": "v1.0.2",
             "date": "2022-01-15 00:00",
-            "leadTimeForChanges": ":19417077000000000",
+            "leadTimeForChanges": {
+                "value": "130.77916666666667",
+                "unit": "day"
+            },
             "result": { # future works
                 "type": "success",
                 "timeToRestoreService": "120:00:00.000"
