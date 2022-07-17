@@ -44,9 +44,9 @@ $ four-keys releases
                 "value": "130.77916666666667",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "success",
-                "timeToRestoreService": "120:00:00.000"
+            "result": {
+                "isSuccess": true,
+                "timeToRestoreService": "120:00:00.000" # future works
             }
         },
         {
@@ -56,8 +56,8 @@ $ four-keys releases
                 "value": "66.9150462962963",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "failure"
+            "result": {
+                "isSucecss": false
             }
         },
 
@@ -68,8 +68,8 @@ $ four-keys releases
                 "value": "224.73468749999998",
                 "unit": "day"
             },
-            "result": { # future works
-                "type": "success"
+            "result": {
+                "isSuccess": true
             }
         }
     ]
