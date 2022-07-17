@@ -64,7 +64,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
 	}
 	sort.Slice(sources, func(i, j int) bool {
-		return sources[i].commit.Committer.When.Before(sources[j].commit.Committer.When)
+		return sources[i].commit.Committer.When.After(sources[j].commit.Committer.When)
 	})
 
 	releases := make([]*Release, 0)
@@ -78,10 +78,10 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		}
 
 		var preCommit *object.Commit
-		if i == 0 {
+		if i == len(sources)-1 {
 			preCommit = nil
 		} else {
-			preCommit = sources[i-1].commit
+			preCommit = sources[i+1].commit
 		}
 		leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
 		if leadTimeForChanges == nil {

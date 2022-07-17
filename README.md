@@ -38,14 +38,15 @@ $ four-keys releases
     },
     "releases": [
         {
-            "tag": "v1.0.0",
-            "date": "2022-01-05 00:00",
+            "tag": "v1.0.2",
+            "date": "2022-01-15 00:00",
             "leadTimeForChanges": {
-                "value": "224.73468749999998",
+                "value": "130.77916666666667",
                 "unit": "day"
             },
             "result": { # future works
-                "type": "success"
+                "type": "success",
+                "timeToRestoreService": "120:00:00.000"
             }
         },
         {
@@ -59,16 +60,16 @@ $ four-keys releases
                 "type": "failure"
             }
         },
+
         {
-            "tag": "v1.0.2",
-            "date": "2022-01-15 00:00",
+            "tag": "v1.0.0",
+            "date": "2022-01-05 00:00",
             "leadTimeForChanges": {
-                "value": "130.77916666666667",
+                "value": "224.73468749999998",
                 "unit": "day"
             },
             "result": { # future works
-                "type": "success",
-                "timeToRestoreService": "120:00:00.000"
+                "type": "success"
             }
         }
     ]
