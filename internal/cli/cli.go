@@ -24,6 +24,7 @@ type DefaultCliOutput struct {
 	Option              *releases.Option         `json:"option"`
 	DeploymentFrequency float64                  `json:"deploymentFrequency"`
 	LeadTimeForChanges  LeadTimeForChangesOutput `json:"leadTimeForChanges"`
+	ChangeFailureRate   float64                  `json:"changeFailureRate"`
 }
 
 func defaultAction(ctx *cli.Context) error {
@@ -48,6 +49,7 @@ func defaultAction(ctx *cli.Context) error {
 		Option:              option,
 		DeploymentFrequency: deploymentFrequency,
 		LeadTimeForChanges:  getLeadTimeForChangesOutput(getMeanLeadTimeForChanges(releases)),
+		ChangeFailureRate:   getChangeFailureRate(releases),
 	})
 	if err != nil {
 		context.Error(err)
@@ -67,4 +69,18 @@ func getMeanLeadTimeForChanges(release []*releases.Release) time.Duration {
 		sum = release.LeadTimeForChanges + sum
 	}
 	return time.Duration(int64(sum) / int64(len(release)))
+}
+
+func getChangeFailureRate(releases []*releases.Release) float64 {
+	if len(releases) == 0 {
+		return 0
+	}
+
+	sumOfFailure := 0
+	for _, release := range releases {
+		if !release.Result.IsSuccess {
+			sumOfFailure += 1
+		}
+	}
+	return float64(sumOfFailure) / float64(len(releases))
 }
