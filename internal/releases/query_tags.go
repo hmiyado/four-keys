@@ -16,6 +16,11 @@ type Release struct {
 	Tag                string        `json:"tag"`
 	Date               time.Time     `json:"date"`
 	LeadTimeForChanges time.Duration `json:"leadTimeForChanges"`
+	Result             ReleaseResult `json:"result"`
+}
+
+type ReleaseResult struct {
+	IsSuccess bool
 }
 
 type Option struct {
@@ -31,7 +36,7 @@ func (r *Release) String() string {
 }
 
 func (r *Release) Equal(another *Release) bool {
-	return r.Tag == another.Tag && r.Date.Equal(another.Date)
+	return r.Tag == another.Tag && r.Date.Equal(another.Date) && r.Result == another.Result
 }
 
 func (o *Option) isInTimeRange(time time.Time) bool {
@@ -88,10 +93,23 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			zero := time.Duration(0)
 			leadTimeForChanges = &zero
 		}
+
+		var isSuccess bool
+		if i == 0 {
+			// it is considered that the newest release is success
+			isSuccess = true
+		} else {
+			postCommit := sources[i-1].commit
+			isRestored := isRestoredRelease(repository, source.commit, postCommit)
+			isSuccess = !isRestored
+		}
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: *leadTimeForChanges,
+			Result: ReleaseResult{
+				IsSuccess: isSuccess,
+			},
 		})
 	}
 	return releases

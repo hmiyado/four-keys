@@ -49,6 +49,11 @@ type ReleaseCliOutput struct {
 	Tag                string                   `json:"tag"`
 	Date               time.Time                `json:"date"`
 	LeadTimeForChanges LeadTimeForChangesOutput `json:"leadTimeForChanges"`
+	Result             ReleaseResultCliOutput   `json:"result"`
+}
+
+type ReleaseResultCliOutput struct {
+	IsSuccess bool `json:"isSuccess"`
 }
 
 type CliContextWrapper struct {
@@ -196,6 +201,9 @@ func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
 			Tag:                release.Tag,
 			Date:               release.Date,
 			LeadTimeForChanges: getLeadTimeForChangesOutput(release.LeadTimeForChanges),
+			Result: ReleaseResultCliOutput{
+				IsSuccess: release.Result.IsSuccess,
+			},
 		})
 	}
 	return output

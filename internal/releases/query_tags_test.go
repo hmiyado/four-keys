@@ -77,9 +77,9 @@ func TestQueryReleasesShouldReturnReleasesWithSpecifiedTimeRange(t *testing.T) {
 		Since: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		Until: time.Date(2020, 12, 31, 23, 59, 59, 999, time.UTC),
 	})
-	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60))}
-	tag5_1_0 := &Release{Tag: "v5.1.0", Date: time.Date(2020, 5, 24, 19, 25, 8, 0, time.FixedZone("+0200", 2*60*60))}
-	tag5_2_0 := &Release{Tag: "v5.2.0", Date: time.Date(2020, 10, 9, 11, 49, 30, 0, time.FixedZone("+0200", 2*60*60))}
+	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60)), Result: ReleaseResult{IsSuccess: true}}
+	tag5_1_0 := &Release{Tag: "v5.1.0", Date: time.Date(2020, 5, 24, 19, 25, 8, 0, time.FixedZone("+0200", 2*60*60)), Result: ReleaseResult{IsSuccess: true}}
+	tag5_2_0 := &Release{Tag: "v5.2.0", Date: time.Date(2020, 10, 9, 11, 49, 30, 0, time.FixedZone("+0200", 2*60*60)), Result: ReleaseResult{IsSuccess: true}}
 	expectedTags := []*Release{tag5_2_0, tag5_1_0, tag5_0_0}
 
 	if len(releases) != len(expectedTags) {

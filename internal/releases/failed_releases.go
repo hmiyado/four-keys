@@ -8,8 +8,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/storer"
 )
 
-// isResoredRelease returns true if newerCommit is restored.
-// If a commit containing 'hotfix' exists between newerCommit and olderCommit, the release is considered restored.
+// isResoredRelease returns true if newerCommit restores olderCommit.
+// If a commit containing 'hotfix' exists between newerCommit and olderCommit, it is considered that newerCommit restores olderCommit .
 // It returns nil if newer commit is null.
 // It returns nil if older commit is not ancestor of newer.
 // If older commit is null, it is assumed that older commit is the initial commit of this repository.
