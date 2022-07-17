@@ -33,8 +33,9 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 	if !util.IsNearBy(cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01) {
 		t.Errorf("deploymentFrequency should be near by 0.00821917808219178 but %v", cliOutput.DeploymentFrequency)
 	}
-	if !util.IsNearBy(float64(cliOutput.LeadTimeForChanges), 12165952333333333, 0.01) {
-		t.Errorf("deploymentFrequency should be near by but %v", cliOutput.DeploymentFrequency)
+	if !util.IsNearBy(cliOutput.LeadTimeForChanges.Present(), 140.8096334876543, 0.01) {
+		t.Log(output)
+		t.Errorf("deploymentFrequency should be near by but %v", cliOutput.LeadTimeForChanges)
 	}
 }
 

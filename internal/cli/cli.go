@@ -21,9 +21,9 @@ func DefaultApp() *cli.App {
 }
 
 type DefaultCliOutput struct {
-	Option              *releases.Option `json:"option"`
-	DeploymentFrequency float64          `json:"deploymentFrequency"`
-	LeadTimeForChanges  time.Duration    `json:"leadTimeForChanges"`
+	Option              *releases.Option         `json:"option"`
+	DeploymentFrequency float64                  `json:"deploymentFrequency"`
+	LeadTimeForChanges  LeadTimeForChangesOutput `json:"leadTimeForChanges"`
 }
 
 func defaultAction(ctx *cli.Context) error {
@@ -42,7 +42,7 @@ func defaultAction(ctx *cli.Context) error {
 	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:              output.Option,
 		DeploymentFrequency: deploymentFrequency,
-		LeadTimeForChanges:  getMeanLeadTimeForChanges(output),
+		LeadTimeForChanges:  getLeadTimeForChangesOutput(getMeanLeadTimeForChanges(output)),
 	})
 	if err != nil {
 		context.Error(err)
