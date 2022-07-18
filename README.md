@@ -7,7 +7,7 @@ DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
 \\
 LeadTimeForChanges = mean( (ReleaseDateTime) - (DateTimeOfFirstCommitAfterPreviousRelease) )
 \\
-TimeToRestoreService = average( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
+TimeToRestore = average( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
 \\
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
@@ -27,7 +27,7 @@ $ four-keys
         "value": "98.84710648148149",
         "unit": "day"
     },
-    "timeToRestoreServices": {
+    "timeToRestore": {
         "value": 2.7969791666666666,
         "unit": "day"
     },
@@ -49,7 +49,7 @@ $ four-keys releases
             },
             "result": {
                 "isSuccess": true,
-                "timeToRestoreService": "120:00:00.000" # future works
+                "timeToRestore": "120:00:00.000" # future works
             }
         },
         {

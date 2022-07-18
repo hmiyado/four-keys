@@ -11,22 +11,22 @@ import (
 )
 
 type ReleaseResult struct {
-	IsSuccess            bool
-	TimeToRestoreService *time.Duration
+	IsSuccess     bool
+	TimeToRestore *time.Duration
 }
 
 func (r ReleaseResult) Equal(another ReleaseResult) bool {
-	if r.TimeToRestoreService == nil && another.TimeToRestoreService == nil {
+	if r.TimeToRestore == nil && another.TimeToRestore == nil {
 		return r.IsSuccess == another.IsSuccess
 	}
-	if r.TimeToRestoreService != nil && another.TimeToRestoreService != nil {
-		return r.IsSuccess == another.IsSuccess && *(r.TimeToRestoreService) == *(another.TimeToRestoreService)
+	if r.TimeToRestore != nil && another.TimeToRestore != nil {
+		return r.IsSuccess == another.IsSuccess && *(r.TimeToRestore) == *(another.TimeToRestore)
 	}
 	return false
 }
 
 func (r ReleaseResult) String() string {
-	return fmt.Sprintf("IsSuccess=%v, TimeToRestoreService=%v", r.IsSuccess, r.TimeToRestoreService)
+	return fmt.Sprintf("IsSuccess=%v, TimeToRestore=%v", r.IsSuccess, r.TimeToRestore)
 }
 
 // isResoredRelease returns true if newerCommit restores olderCommit.
@@ -52,8 +52,8 @@ func getReleaseResult(repository *git.Repository, sources []ReleaseSource, targe
 	if targetIndex == 0 {
 		// it is considered that the newest release is success
 		return ReleaseResult{
-			IsSuccess:            true,
-			TimeToRestoreService: nil,
+			IsSuccess:     true,
+			TimeToRestore: nil,
 		}
 	}
 	source := sources[targetIndex]
@@ -65,11 +65,11 @@ func getReleaseResult(repository *git.Repository, sources []ReleaseSource, targe
 		preReleaseCommit = sources[targetIndex+1].commit
 	}
 
-	timeToRestoreServices := time.Duration(0)
+	timeToRestore := time.Duration(0)
 	if isSuccess && isRestoredRelease(repository, preReleaseCommit, source.commit) {
 		newerCommitIndex := targetIndex
 		for isRestoredRelease(repository, sources[newerCommitIndex+1].commit, sources[newerCommitIndex].commit) {
-			timeToRestoreServices += sources[newerCommitIndex].commit.Committer.When.Sub(sources[newerCommitIndex+1].commit.Committer.When)
+			timeToRestore += sources[newerCommitIndex].commit.Committer.When.Sub(sources[newerCommitIndex+1].commit.Committer.When)
 			newerCommitIndex += 1
 			if newerCommitIndex >= len(sources)-1 {
 				break
@@ -77,13 +77,13 @@ func getReleaseResult(repository *git.Repository, sources []ReleaseSource, targe
 		}
 	}
 
-	var resultTimeToRestoreServices *time.Duration
-	if timeToRestoreServices != 0 {
-		resultTimeToRestoreServices = &timeToRestoreServices
+	var resultTimeToRestore *time.Duration
+	if timeToRestore != 0 {
+		resultTimeToRestore = &timeToRestore
 	}
 
 	return ReleaseResult{
-		IsSuccess:            isSuccess,
-		TimeToRestoreService: resultTimeToRestoreServices,
+		IsSuccess:     isSuccess,
+		TimeToRestore: resultTimeToRestore,
 	}
 }

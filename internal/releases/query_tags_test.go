@@ -118,8 +118,8 @@ func TestQueryReleasesShouldHaveReleaseResult(t *testing.T) {
 		Date:               time.Date(2016, 1, 11, 12, 9, 15, 0, time.FixedZone("+0100", 1*60*60)),
 		LeadTimeForChanges: parseDurationOrZero("25m24s"),
 		Result: ReleaseResult{
-			IsSuccess:            true,
-			TimeToRestoreService: parseDurationOrNil("67h7m39s"),
+			IsSuccess:     true,
+			TimeToRestore: parseDurationOrNil("67h7m39s"),
 		},
 	}
 	tag2_1_1 := &Release{
@@ -127,8 +127,8 @@ func TestQueryReleasesShouldHaveReleaseResult(t *testing.T) {
 		Date:               time.Date(2016, 1, 8, 17, 1, 36, 0, time.FixedZone("+0100", 1*60*60)),
 		LeadTimeForChanges: parseDurationOrZero("12m26s"),
 		Result: ReleaseResult{
-			IsSuccess:            false,
-			TimeToRestoreService: nil,
+			IsSuccess:     false,
+			TimeToRestore: nil,
 		},
 	}
 	tag2_1_0 := &Release{
@@ -136,8 +136,8 @@ func TestQueryReleasesShouldHaveReleaseResult(t *testing.T) {
 		Date:               time.Date(2015, 12, 23, 9, 48, 11, 0, time.FixedZone("+0100", 1*60*60)),
 		LeadTimeForChanges: parseDurationOrZero(""),
 		Result: ReleaseResult{
-			IsSuccess:            true,
-			TimeToRestoreService: nil,
+			IsSuccess:     true,
+			TimeToRestore: nil,
 		},
 	}
 	expectedTags := []*Release{tag2_1_2, tag2_1_1, tag2_1_0}
