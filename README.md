@@ -27,7 +27,10 @@ $ four-keys
         "value": "98.84710648148149",
         "unit": "day"
     },
-    "timeToRestoreServices": "00:12:34.567", # future works
+    "timeToRestoreServices": {
+        "value": 2.7969791666666666,
+        "unit": "day"
+    },
     "changeFailureRate": 0.50
 }
 $ four-keys releases

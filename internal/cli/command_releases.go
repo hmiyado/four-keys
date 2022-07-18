@@ -46,10 +46,10 @@ type ReleasesCliOutput struct {
 }
 
 type ReleaseCliOutput struct {
-	Tag                string                   `json:"tag"`
-	Date               time.Time                `json:"date"`
-	LeadTimeForChanges LeadTimeForChangesOutput `json:"leadTimeForChanges"`
-	Result             ReleaseResultCliOutput   `json:"result"`
+	Tag                string                 `json:"tag"`
+	Date               time.Time              `json:"date"`
+	LeadTimeForChanges DurationWithTimeUnit   `json:"leadTimeForChanges"`
+	Result             ReleaseResultCliOutput `json:"result"`
 }
 
 type ReleaseResultCliOutput struct {
@@ -200,7 +200,7 @@ func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
 		output = append(output, &ReleaseCliOutput{
 			Tag:                release.Tag,
 			Date:               release.Date,
-			LeadTimeForChanges: getLeadTimeForChangesOutput(release.LeadTimeForChanges),
+			LeadTimeForChanges: getDurationWithTimeUnit(release.LeadTimeForChanges),
 			Result: ReleaseResultCliOutput{
 				IsSuccess: release.Result.IsSuccess,
 			},
