@@ -4,13 +4,23 @@ measure four keys metrics
 
 $$
 DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
-\\
+$$
+
+$$
 LeadTimeForChanges = mean( (ReleaseDateTime) - (DateTimeOfFirstCommitAfterPreviousRelease) )
-\\
+$$
+
+$$
 TimeToRestore = mean( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
-\\
+$$
+
+$$
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
+
+## Install
+
+Download binary from [Releases page](https://github.com/hmiyado/four-keys/releases).
 
 ## Example
 
@@ -83,3 +93,7 @@ $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-
   ]
 }
 ```
+
+## License
+
+see [LICENSE](./LICENSE)
