@@ -11,35 +11,35 @@ const (
 	TimeUnitDay TimeUnit = "day"
 )
 
-type LeadTimeForChangesOutput struct {
+type DurationWithTimeUnit struct {
 	*time.Duration
 	timeUnit TimeUnit
 }
 
-func getLeadTimeForChangesOutput(duration time.Duration) LeadTimeForChangesOutput {
-	p := LeadTimeForChangesOutput{
+func getDurationWithTimeUnit(duration time.Duration) DurationWithTimeUnit {
+	p := DurationWithTimeUnit{
 		Duration: &duration,
 		timeUnit: TimeUnitDay,
 	}
 	return p
 }
 
-func (p *LeadTimeForChangesOutput) Present() float64 {
+func (p *DurationWithTimeUnit) Present() float64 {
 	presentByDay := func(duration *time.Duration) float64 {
 		return duration.Hours() / float64(24)
 	}
 	return presentByDay(p.Duration)
 }
 
-func (p *LeadTimeForChangesOutput) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&MetricsOutput{
+func (p *DurationWithTimeUnit) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&DurationOutput{
 		Value: p.Present(),
 		Unit:  string(p.timeUnit),
 	})
 }
 
-func (p *LeadTimeForChangesOutput) UnmarshalJSON(data []byte) error {
-	var out MetricsOutput
+func (p *DurationWithTimeUnit) UnmarshalJSON(data []byte) error {
+	var out DurationOutput
 	err := json.Unmarshal(data, &out)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (p *LeadTimeForChangesOutput) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type MetricsOutput struct {
+type DurationOutput struct {
 	Value float64 `json:"value"`
 	Unit  string  `json:"unit"`
 }

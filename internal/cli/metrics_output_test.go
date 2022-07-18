@@ -8,7 +8,7 @@ import (
 
 func TestPresentShouldReturnDaysWhenTimeUnitIsDay(t *testing.T) {
 	day := time.Duration(time.Hour * 24)
-	actual := &LeadTimeForChangesOutput{
+	actual := &DurationWithTimeUnit{
 		Duration: &day,
 		timeUnit: TimeUnitDay,
 	}
@@ -19,7 +19,7 @@ func TestPresentShouldReturnDaysWhenTimeUnitIsDay(t *testing.T) {
 
 func TestPresentShouldEqualMarshalAndUnmarshalJSON(t *testing.T) {
 	day := time.Duration(time.Hour * 24)
-	expected := &LeadTimeForChangesOutput{
+	expected := &DurationWithTimeUnit{
 		Duration: &day,
 		timeUnit: TimeUnitDay,
 	}
@@ -28,7 +28,7 @@ func TestPresentShouldEqualMarshalAndUnmarshalJSON(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	var actual LeadTimeForChangesOutput
+	var actual DurationWithTimeUnit
 	unmarshalError := json.Unmarshal(marshaled, &actual)
 	if unmarshalError != nil {
 		t.Errorf(err.Error())
