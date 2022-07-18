@@ -93,3 +93,7 @@ $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-
   ]
 }
 ```
+
+## License
+
+see [LICENSE](./LICENSE)
