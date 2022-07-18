@@ -21,11 +21,11 @@ func DefaultApp() *cli.App {
 }
 
 type DefaultCliOutput struct {
-	Option                *releases.Option     `json:"option"`
-	DeploymentFrequency   float64              `json:"deploymentFrequency"`
-	LeadTimeForChanges    DurationWithTimeUnit `json:"leadTimeForChanges"`
-	TimeToRestoreServices DurationWithTimeUnit `json:"timeToRestoreServices"`
-	ChangeFailureRate     float64              `json:"changeFailureRate"`
+	Option              *releases.Option     `json:"option"`
+	DeploymentFrequency float64              `json:"deploymentFrequency"`
+	LeadTimeForChanges  DurationWithTimeUnit `json:"leadTimeForChanges"`
+	TimeToRestore       DurationWithTimeUnit `json:"timeToRestore"`
+	ChangeFailureRate   float64              `json:"changeFailureRate"`
 }
 
 func defaultAction(ctx *cli.Context) error {
@@ -42,11 +42,11 @@ func defaultAction(ctx *cli.Context) error {
 	}
 
 	outputJson, err := json.Marshal(&DefaultCliOutput{
-		Option:                option,
-		DeploymentFrequency:   getDeploymentFrequency(releases, *option),
-		LeadTimeForChanges:    getDurationWithTimeUnit(getMeanLeadTimeForChanges(releases)),
-		TimeToRestoreServices: getDurationWithTimeUnit(getTimeToRestoreServices(releases)),
-		ChangeFailureRate:     getChangeFailureRate(releases),
+		Option:              option,
+		DeploymentFrequency: getDeploymentFrequency(releases, *option),
+		LeadTimeForChanges:  getDurationWithTimeUnit(getMeanLeadTimeForChanges(releases)),
+		TimeToRestore:       getDurationWithTimeUnit(getTimeToRestore(releases)),
+		ChangeFailureRate:   getChangeFailureRate(releases),
 	})
 	if err != nil {
 		context.Error(err)
@@ -75,29 +75,18 @@ func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
 	return time.Duration(int64(sum) / int64(len(releases)))
 }
 
-func getTimeToRestoreServices(releases []*releases.Release) time.Duration {
+func getTimeToRestore(releases []*releases.Release) time.Duration {
 	sum := time.Duration(0)
-	countOfRestoreService := 0
-	failedReleaseIndex := -1
-	for i := len(releases) - 1; i >= 0; i-- {
-		release := releases[i]
-		if !release.Result.IsSuccess {
-			if failedReleaseIndex < 0 {
-				failedReleaseIndex = i
-			}
-			continue
+	countOfRestore := 0
+	for _, release := range releases {
+		if release.Result.TimeToRestore != nil {
+			sum += *release.Result.TimeToRestore
 		}
-		if release.Result.IsSuccess && failedReleaseIndex < 0 {
-			continue
-		}
-		sum += release.Date.Sub(releases[failedReleaseIndex].Date)
-		countOfRestoreService += 1
-		failedReleaseIndex = -1
 	}
-	if countOfRestoreService == 0 {
+	if countOfRestore == 0 {
 		return sum
 	}
-	return sum / time.Duration(countOfRestoreService)
+	return sum / time.Duration(countOfRestore)
 }
 
 func getChangeFailureRate(releases []*releases.Release) float64 {

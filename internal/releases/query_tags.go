@@ -3,7 +3,6 @@ package releases
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -19,10 +18,6 @@ type Release struct {
 	Result             ReleaseResult `json:"result"`
 }
 
-type ReleaseResult struct {
-	IsSuccess bool
-}
-
 type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
@@ -32,11 +27,11 @@ type Option struct {
 }
 
 func (r *Release) String() string {
-	return fmt.Sprintf("(Tag=%v,Date=%v)", r.Tag, r.Date)
+	return fmt.Sprintf("(Tag=%v, Date=%v, LeadTimeForChamges=%v, Result=%v)", r.Tag, r.Date, r.LeadTimeForChanges, r.Result.String())
 }
 
 func (r *Release) Equal(another *Release) bool {
-	return r.Tag == another.Tag && r.Date.Equal(another.Date) && r.Result == another.Result
+	return r.Tag == another.Tag && r.Date.Equal(another.Date) && r.Result.Equal(another.Result)
 }
 
 func (o *Option) isInTimeRange(time time.Time) bool {
@@ -55,22 +50,8 @@ func (o *Option) shouldIgnore(name string) bool {
 
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
-	type ReleaseSource struct {
-		tag    *plumbing.Reference
-		commit *object.Commit
-	}
 	tags := QueryTags(repository)
-	sources := make([]ReleaseSource, 0)
-	for _, tag := range tags {
-		commit, err := repository.CommitObject(tag.Hash())
-		if err != nil {
-			continue
-		}
-		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
-	}
-	sort.Slice(sources, func(i, j int) bool {
-		return sources[i].commit.Committer.When.After(sources[j].commit.Committer.When)
-	})
+	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
 	for i, source := range sources {
@@ -94,22 +75,11 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			leadTimeForChanges = &zero
 		}
 
-		var isSuccess bool
-		if i == 0 {
-			// it is considered that the newest release is success
-			isSuccess = true
-		} else {
-			postCommit := sources[i-1].commit
-			isRestored := isRestoredRelease(repository, source.commit, postCommit)
-			isSuccess = !isRestored
-		}
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: *leadTimeForChanges,
-			Result: ReleaseResult{
-				IsSuccess: isSuccess,
-			},
+			Result:             getReleaseResult(repository, sources, i),
 		})
 	}
 	return releases

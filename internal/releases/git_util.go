@@ -2,8 +2,10 @@ package releases
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
@@ -49,4 +51,24 @@ func traverseCommits(repository *git.Repository, olderCommit *object.Commit, new
 		return ErrLogUnavailable
 	}
 	return iter.ForEach(traversaler)
+}
+
+type ReleaseSource struct {
+	tag    *plumbing.Reference
+	commit *object.Commit
+}
+
+func getReleaseSourcesFromTags(repository *git.Repository, tags []*plumbing.Reference) []ReleaseSource {
+	sources := make([]ReleaseSource, 0)
+	for _, tag := range tags {
+		commit, err := repository.CommitObject(tag.Hash())
+		if err != nil {
+			continue
+		}
+		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
+	}
+	sort.Slice(sources, func(i, j int) bool {
+		return sources[i].commit.Committer.When.After(sources[j].commit.Committer.When)
+	})
+	return sources
 }
