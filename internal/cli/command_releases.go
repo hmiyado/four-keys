@@ -53,7 +53,8 @@ type ReleaseCliOutput struct {
 }
 
 type ReleaseResultCliOutput struct {
-	IsSuccess bool `json:"isSuccess"`
+	IsSuccess     bool                  `json:"isSuccess"`
+	TimeToRestore *DurationWithTimeUnit `json:"timeToRestore"`
 }
 
 type CliContextWrapper struct {
@@ -201,10 +202,22 @@ func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
 			Tag:                release.Tag,
 			Date:               release.Date,
 			LeadTimeForChanges: getDurationWithTimeUnit(release.LeadTimeForChanges),
-			Result: ReleaseResultCliOutput{
-				IsSuccess: release.Result.IsSuccess,
-			},
+			Result:             mapReleaseResultToCliOutput(release.Result),
 		})
 	}
 	return output
+}
+
+func mapReleaseResultToCliOutput(result releases.ReleaseResult) ReleaseResultCliOutput {
+	if result.TimeToRestore == nil {
+		return ReleaseResultCliOutput{
+			IsSuccess:     result.IsSuccess,
+			TimeToRestore: nil,
+		}
+	}
+	t := getDurationWithTimeUnit(*result.TimeToRestore)
+	return ReleaseResultCliOutput{
+		IsSuccess:     result.IsSuccess,
+		TimeToRestore: &t,
+	}
 }
