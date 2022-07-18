@@ -3,7 +3,6 @@ package releases
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -49,25 +48,10 @@ func (o *Option) shouldIgnore(name string) bool {
 	return o.IgnorePattern.MatchString(name)
 }
 
-type ReleaseSource struct {
-	tag    *plumbing.Reference
-	commit *object.Commit
-}
-
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	tags := QueryTags(repository)
-	sources := make([]ReleaseSource, 0)
-	for _, tag := range tags {
-		commit, err := repository.CommitObject(tag.Hash())
-		if err != nil {
-			continue
-		}
-		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
-	}
-	sort.Slice(sources, func(i, j int) bool {
-		return sources[i].commit.Committer.When.After(sources[j].commit.Committer.When)
-	})
+	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
 	for i, source := range sources {
