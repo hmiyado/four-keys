@@ -33,10 +33,11 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 	// }
 	util.AssertIsNearBy(t, cliOutput.DeploymentFrequency, 0.00821917808219178, 0.01)
 	util.AssertIsNearBy(t, cliOutput.LeadTimeForChanges.Present(), 140.8096334876543, 0.01)
+	util.AssertIsNearBy(t, cliOutput.TimeToRestoreServices.Present(), 0, 0.01)
 	util.AssertIsNearBy(t, cliOutput.ChangeFailureRate, 0, 0.01)
 }
 
-func TestDefaultAppShouldReturnChangeFailureRate(t *testing.T) {
+func TestDefaultAppShouldReturnTimeToRestoreServicesAndChangeFailureRate(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	defaltApp := DefaultApp()
 	testApp := &cli.App{
@@ -52,6 +53,7 @@ func TestDefaultAppShouldReturnChangeFailureRate(t *testing.T) {
 	var cliOutput DefaultCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
 	util.AssertIsNearBy(t, cliOutput.ChangeFailureRate, 0.08333333333333333, 0.01)
+	util.AssertIsNearBy(t, cliOutput.TimeToRestoreServices.Present(), 2.7969791666666666, 0.01)
 }
 
 func TestDefaultAppShouldRunWithoutOption(t *testing.T) {
