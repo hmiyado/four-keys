@@ -18,6 +18,10 @@ $$
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
 
+## Install
+
+Download binary from [Releases page](https://github.com/hmiyado/four-keys/releases).
+
 ## Example
 
 ```sh
