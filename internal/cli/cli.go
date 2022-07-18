@@ -41,14 +41,9 @@ func defaultAction(ctx *cli.Context) error {
 		return err
 	}
 
-	duration := option.Until.Sub(option.Since)
-	daysCount := int(duration.Hours() / 24)
-	releasesCount := len(releases)
-	deploymentFrequency := float64(releasesCount) / float64(daysCount)
-
 	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:                option,
-		DeploymentFrequency:   deploymentFrequency,
+		DeploymentFrequency:   getDeploymentFrequency(releases, *option),
 		LeadTimeForChanges:    getDurationWithTimeUnit(getMeanLeadTimeForChanges(releases)),
 		TimeToRestoreServices: getDurationWithTimeUnit(getTimeToRestoreServices(releases)),
 		ChangeFailureRate:     getChangeFailureRate(releases),
@@ -60,6 +55,13 @@ func defaultAction(ctx *cli.Context) error {
 	context.Write(outputJson)
 	return nil
 
+}
+
+func getDeploymentFrequency(releases []*releases.Release, option releases.Option) float64 {
+	duration := option.Until.Sub(option.Since)
+	daysCount := int(duration.Hours() / 24)
+	releasesCount := len(releases)
+	return float64(releasesCount) / float64(daysCount)
 }
 
 func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
