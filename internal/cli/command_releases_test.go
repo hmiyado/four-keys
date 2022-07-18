@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hmiyado/four-keys/internal/util"
 	"github.com/urfave/cli/v2"
@@ -25,7 +27,7 @@ func TestGetCommandReleaseShouldReturnReleasesWithoutOptions(t *testing.T) {
 	}
 }
 
-func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrl(t *testing.T) {
+func TestGetCommandReleaseShouldHaveDefaultTimeRangeOption(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
 	set := flag.NewFlagSet("test", 0)
@@ -37,9 +39,13 @@ func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrl(t *testing.T) {
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
 	expectedReleasesNum := 60
-	if len(cliOutput.Releases) != expectedReleasesNum {
-		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
+	days28, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*28))
+	days31, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*31))
+	duration := cliOutput.Option.Until.Sub(cliOutput.Option.Since)
+	if duration >= days28 && duration <= days31 {
+		return
 	}
+	t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
 }
 
 func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntilIgnorePattern(t *testing.T) {

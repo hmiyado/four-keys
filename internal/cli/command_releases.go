@@ -16,18 +16,21 @@ import (
 func getCommandReleasesFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:  "repository",
-			Usage: "the remote repository url. repository will be cloned in memory. default is local repository(current directory)",
+			Name:        "repository",
+			Usage:       "the remote repository url. repository will be cloned in memory",
+			DefaultText: "local repository of current directory",
 		},
 		&cli.TimestampFlag{
-			Name:   "since",
-			Usage:  "the start date to query releases (inclusive)",
-			Layout: "2006-01-02",
+			Name:        "since",
+			Usage:       "the start date to query releases (inclusive)",
+			DefaultText: "1 month ago",
+			Layout:      "2006-01-02",
 		},
 		&cli.TimestampFlag{
-			Name:   "until",
-			Usage:  "the end date to query releases (inclusive)",
-			Layout: "2006-01-02",
+			Name:        "until",
+			Usage:       "the end date to query releases (inclusive)",
+			DefaultText: "now",
+			Layout:      "2006-01-02",
 		},
 		&cli.StringFlag{
 			Name:  "ignorePattern",
@@ -66,7 +69,8 @@ func (c *CliContextWrapper) Since() time.Time {
 	if optionSince != nil {
 		return *optionSince
 	} else {
-		return time.Unix(0, 0)
+		now := time.Now()
+		return time.Date(now.Year(), now.Month()-1, now.Day(), now.Hour(), now.Minute(), now.Second(), now.Nanosecond(), now.Location())
 	}
 }
 
