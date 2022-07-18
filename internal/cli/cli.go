@@ -77,27 +77,16 @@ func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
 
 func getTimeToRestore(releases []*releases.Release) time.Duration {
 	sum := time.Duration(0)
-	countOfRestoreService := 0
-	failedReleaseIndex := -1
-	for i := len(releases) - 1; i >= 0; i-- {
-		release := releases[i]
-		if !release.Result.IsSuccess {
-			if failedReleaseIndex < 0 {
-				failedReleaseIndex = i
-			}
-			continue
+	countOfRestore := 0
+	for _, release := range releases {
+		if release.Result.TimeToRestore != nil {
+			sum += *release.Result.TimeToRestore
 		}
-		if release.Result.IsSuccess && failedReleaseIndex < 0 {
-			continue
-		}
-		sum += release.Date.Sub(releases[failedReleaseIndex].Date)
-		countOfRestoreService += 1
-		failedReleaseIndex = -1
 	}
-	if countOfRestoreService == 0 {
+	if countOfRestore == 0 {
 		return sum
 	}
-	return sum / time.Duration(countOfRestoreService)
+	return sum / time.Duration(countOfRestore)
 }
 
 func getChangeFailureRate(releases []*releases.Release) float64 {
