@@ -4,11 +4,17 @@ measure four keys metrics
 
 $$
 DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
-\\
+$$
+
+$$
 LeadTimeForChanges = mean( (ReleaseDateTime) - (DateTimeOfFirstCommitAfterPreviousRelease) )
-\\
+$$
+
+$$
 TimeToRestore = mean( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
-\\
+$$
+
+$$
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
 
