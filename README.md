@@ -7,7 +7,7 @@ DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
 \\
 LeadTimeForChanges = mean( (ReleaseDateTime) - (DateTimeOfFirstCommitAfterPreviousRelease) )
 \\
-TimeToRestore = average( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
+TimeToRestore = mean( (RestoredReleaseDateTime) - (FailureReleaseDateTime) )
 \\
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
@@ -15,22 +15,23 @@ $$
 ## Example
 
 ```sh
-$ four-keys
+$ four-keys | jq
 {
-    "option": {
-        "since": "2022-01-01",
-        "until": "2022-01-31"
-    },
-    "deploymentFrequency": 0.5,
-    "leadTimeForChanges": {
-        "value": "98.84710648148149",
-        "unit": "day"
-    },
-    "timeToRestore": {
-        "value": 2.7969791666666666,
-        "unit": "day"
-    },
-    "changeFailureRate": 0.50
+  "option": {
+    "since": "2022-06-18T20:41:47.377195+09:00",
+    "until": "2022-07-18T20:41:47.377196+09:00",
+    "ignorePattern": null
+  },
+  "deploymentFrequency": 0.1,
+  "leadTimeForChanges": {
+    "value": 5.447465277777778,
+    "unit": "day"
+  },
+  "timeToRestore": {
+    "value": 0,
+    "unit": "day"
+  },
+  "changeFailureRate": 0
 }
 $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-12-20 --until 2016-01-12 | jq
 {
