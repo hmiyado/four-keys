@@ -62,15 +62,15 @@ func defaultAction(ctx *cli.Context) error {
 
 }
 
-func getMeanLeadTimeForChanges(release []*releases.Release) time.Duration {
-	if len(release) == 0 {
+func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
+	if len(releases) == 0 {
 		return time.Duration(0)
 	}
 	sum := time.Duration(0)
-	for _, release := range release {
+	for _, release := range releases {
 		sum = release.LeadTimeForChanges + sum
 	}
-	return time.Duration(int64(sum) / int64(len(release)))
+	return time.Duration(int64(sum) / int64(len(releases)))
 }
 
 func getTimeToRestoreServices(releases []*releases.Release) time.Duration {
