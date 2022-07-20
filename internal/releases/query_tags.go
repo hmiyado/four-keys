@@ -72,6 +72,9 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
+	nextSuccessSourceIndex := -1
+	nextSuccessReleaseIndex := -1
+	isRestored := false
 	for i, source := range sources {
 		if option.shouldIgnore(source.tag.Name().Short()) {
 			continue
@@ -81,30 +84,47 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			continue
 		}
 
-		timerKeyGetLeadTimeForChanges := fmt.Sprintf("source[%v]GetLeadTimeForChanges", i)
-		option.StartTimer(timerKeyGetLeadTimeForChanges)
-		var preCommit *object.Commit
-		if i == len(sources)-1 {
-			preCommit = nil
-		} else {
-			preCommit = sources[i+1].commit
-		}
-		leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
-		if leadTimeForChanges == nil {
-			zero := time.Duration(0)
-			leadTimeForChanges = &zero
-		}
-		option.StopTimer(timerKeyGetLeadTimeForChanges)
+		timerKeyReleaseMetrics := fmt.Sprintf("source[%v]GetReleaseMetrics", i)
+		option.StartTimer(timerKeyReleaseMetrics)
 
-		timerKeyGetReleaseResult := fmt.Sprintf("source[%v]ReleaseResult", i)
-		option.StartTimer(timerKeyGetReleaseResult)
+		isSuccess := !isRestored
+		if nextSuccessSourceIndex > 0 && isSuccess && i != nextSuccessSourceIndex+1 {
+			timeToRestore := sources[nextSuccessSourceIndex].commit.Committer.When.Sub(sources[i-1].commit.Committer.When)
+			releases[nextSuccessReleaseIndex].Result.TimeToRestore = &timeToRestore
+		}
+		if isSuccess {
+			nextSuccessSourceIndex = i
+			nextSuccessReleaseIndex = len(releases)
+		}
+
+		var lastCommit *object.Commit
+		var preReleaseCommit *object.Commit
+		if i < len(sources)-1 {
+			preReleaseCommit = sources[i+1].commit
+		}
+		restoresPreRelease := false
+		err := traverseCommits(repository, preReleaseCommit, source.commit, func(c *object.Commit) error {
+			if strings.Contains(c.Message, "hotfix") {
+				restoresPreRelease = true
+			}
+			lastCommit = c
+			return nil
+		})
+		isRestored = restoresPreRelease
+		leadTimeForChanges := time.Duration(0)
+		if err == nil && lastCommit != nil {
+			leadTimeForChanges = source.commit.Committer.When.Sub(lastCommit.Committer.When)
+		}
+		option.StopTimer(timerKeyReleaseMetrics)
+
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
-			LeadTimeForChanges: *leadTimeForChanges,
-			Result:             getReleaseResult(repository, sources, i),
+			LeadTimeForChanges: leadTimeForChanges,
+			Result: ReleaseResult{
+				IsSuccess: isSuccess,
+			},
 		})
-		option.StopTimer(timerKeyGetReleaseResult)
 	}
 	return releases
 }
