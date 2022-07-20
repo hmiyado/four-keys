@@ -22,8 +22,10 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until         time.Time      `json:"until"`
-	IgnorePattern *regexp.Regexp `json:"ignorePattern"`
+	Until          time.Time      `json:"until"`
+	IgnorePattern  *regexp.Regexp `json:"ignorePattern"`
+	StartTimerFunc func(string)   `json:"-"`
+	StopTimerFunc  func(string)   `json:"-"`
 }
 
 func (r *Release) String() string {
@@ -48,9 +50,25 @@ func (o *Option) shouldIgnore(name string) bool {
 	return o.IgnorePattern.MatchString(name)
 }
 
+func (o *Option) StartTimer(key string) {
+	if o != nil && o.StartTimerFunc != nil {
+		o.StartTimerFunc(key)
+	}
+}
+
+func (o *Option) StopTimer(key string) {
+	if o != nil && o.StopTimerFunc != nil {
+		o.StopTimerFunc(key)
+	}
+}
+
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
+	option.StartTimer("QueryReleases")
+	defer option.StopTimer("QueryReleases")
+	option.StartTimer("QueryTags")
 	tags := QueryTags(repository)
+	option.StopTimer("QueryTags")
 	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
@@ -63,6 +81,8 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			continue
 		}
 
+		timerKeyGetLeadTimeForChanges := fmt.Sprintf("source[%v]GetLeadTimeForChanges", i)
+		option.StartTimer(timerKeyGetLeadTimeForChanges)
 		var preCommit *object.Commit
 		if i == len(sources)-1 {
 			preCommit = nil
@@ -74,13 +94,17 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			zero := time.Duration(0)
 			leadTimeForChanges = &zero
 		}
+		option.StopTimer(timerKeyGetLeadTimeForChanges)
 
+		timerKeyGetReleaseResult := fmt.Sprintf("source[%v]ReleaseResult", i)
+		option.StartTimer(timerKeyGetReleaseResult)
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: *leadTimeForChanges,
 			Result:             getReleaseResult(repository, sources, i),
 		})
+		option.StopTimer(timerKeyGetReleaseResult)
 	}
 	return releases
 }

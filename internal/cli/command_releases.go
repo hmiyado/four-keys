@@ -64,6 +64,8 @@ type CliContextWrapper struct {
 	context *cli.Context
 }
 
+var timerMap map[string]time.Time
+
 func (c *CliContextWrapper) Since() time.Time {
 	optionSince := c.context.Timestamp("since")
 	if optionSince != nil {
@@ -92,6 +94,8 @@ func (c *CliContextWrapper) IgnorePattern() (*regexp.Regexp, error) {
 }
 
 func (c *CliContextWrapper) Repository() (*git.Repository, error) {
+	c.StartTimer("Open Repository")
+	defer c.StopTimer("Open Repository")
 	repositoryUrl := c.context.String("repository")
 	var repository *git.Repository
 	var error error
@@ -121,10 +125,16 @@ func (c *CliContextWrapper) Option() (*releases.Option, error) {
 	}
 
 	return &releases.Option{
-		Since:         c.Since(),
-		Until:         c.Until(),
-		IgnorePattern: ignorePattern,
+		Since:          c.Since(),
+		Until:          c.Until(),
+		IgnorePattern:  ignorePattern,
+		StartTimerFunc: c.StartTimer,
+		StopTimerFunc:  c.StopTimer,
 	}, nil
+}
+
+func (c *CliContextWrapper) isDebug() bool {
+	return c.context.Bool("debug")
 }
 
 func (c *CliContextWrapper) Debugf(format string, a ...any) {
@@ -140,6 +150,22 @@ func (c *CliContextWrapper) Debugln(a ...any) {
 	if debug {
 		fmt.Print("[Debug] ")
 		fmt.Println(a...)
+	}
+}
+
+func (c *CliContextWrapper) StartTimer(key string) {
+	if c.isDebug() {
+		if timerMap == nil {
+			timerMap = make(map[string]time.Time)
+		}
+		timerMap[key] = time.Now()
+	}
+}
+
+func (c *CliContextWrapper) StopTimer(key string) {
+	if c.isDebug() {
+		c.Debugln(key, ": ", time.Since(timerMap[key]))
+		delete(timerMap, key)
 	}
 }
 
