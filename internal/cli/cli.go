@@ -30,6 +30,7 @@ type DefaultCliOutput struct {
 
 func defaultAction(ctx *cli.Context) error {
 	context := &CliContextWrapper{context: ctx}
+	context.Debugln("In debug mode")
 	releases, err := QueryReleases(context)
 	if err != nil {
 		context.Error(err)
@@ -41,6 +42,7 @@ func defaultAction(ctx *cli.Context) error {
 		return err
 	}
 
+	context.StartTimer("Calculate metrics")
 	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:              option,
 		DeploymentFrequency: getDeploymentFrequency(releases, *option),
@@ -48,6 +50,7 @@ func defaultAction(ctx *cli.Context) error {
 		TimeToRestore:       getDurationWithTimeUnit(getTimeToRestore(releases)),
 		ChangeFailureRate:   getChangeFailureRate(releases),
 	})
+	context.StopTimer("Calculate metrics")
 	if err != nil {
 		context.Error(err)
 		return err
