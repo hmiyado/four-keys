@@ -89,10 +89,14 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		} else {
 			preCommit = sources[i+1].commit
 		}
-		leadTimeForChanges := GetLeadTimeForChanges(repository, preCommit, source.commit)
-		if leadTimeForChanges == nil {
-			zero := time.Duration(0)
-			leadTimeForChanges = &zero
+		var lastCommit *object.Commit
+		err := traverseCommits(repository, preCommit, source.commit, func(c *object.Commit) error {
+			lastCommit = c
+			return nil
+		})
+		leadTimeForChanges := time.Duration(0)
+		if err == nil && lastCommit != nil {
+			leadTimeForChanges = source.commit.Committer.When.Sub(lastCommit.Committer.When)
 		}
 		option.StopTimer(timerKeyGetLeadTimeForChanges)
 
@@ -101,7 +105,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
-			LeadTimeForChanges: *leadTimeForChanges,
+			LeadTimeForChanges: leadTimeForChanges,
 			Result:             getReleaseResult(repository, sources, i),
 		})
 		option.StopTimer(timerKeyGetReleaseResult)
