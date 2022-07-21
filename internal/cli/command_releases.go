@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
-	"github.com/hmiyado/four-keys/internal/releases"
+	"github.com/hmiyado/four-keys/internal/core"
 	"github.com/urfave/cli/v2"
 )
 
@@ -44,7 +44,7 @@ func getCommandReleasesFlags() []cli.Flag {
 }
 
 type ReleasesCliOutput struct {
-	Option   *releases.Option    `json:"option"`
+	Option   *core.Option        `json:"option"`
 	Releases []*ReleaseCliOutput `json:"releases"`
 }
 
@@ -116,7 +116,7 @@ func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 	return repository, nil
 }
 
-func (c *CliContextWrapper) Option() (*releases.Option, error) {
+func (c *CliContextWrapper) Option() (*core.Option, error) {
 	ignorePattern, err := c.IgnorePattern()
 	if err != nil {
 		wrappedError := fmt.Errorf("[invalid ignore pattern] %v", err)
@@ -124,7 +124,7 @@ func (c *CliContextWrapper) Option() (*releases.Option, error) {
 		return nil, wrappedError
 	}
 
-	return &releases.Option{
+	return &core.Option{
 		Since:          c.Since(),
 		Until:          c.Until(),
 		IgnorePattern:  ignorePattern,
@@ -211,7 +211,7 @@ func GetCommandReleases() *cli.Command {
 	}
 }
 
-func QueryReleases(context *CliContextWrapper) ([]*releases.Release, error) {
+func QueryReleases(context *CliContextWrapper) ([]*core.Release, error) {
 	repository, err := context.Repository()
 	if err != nil {
 		context.Error(err)
@@ -222,10 +222,10 @@ func QueryReleases(context *CliContextWrapper) ([]*releases.Release, error) {
 	if err != nil {
 		return nil, err
 	}
-	return releases.QueryReleases(repository, option), nil
+	return core.QueryReleases(repository, option), nil
 }
 
-func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
+func mapReleasesToCliOutput(releases []*core.Release) []*ReleaseCliOutput {
 	output := make([]*ReleaseCliOutput, 0)
 	for _, release := range releases {
 		output = append(output, &ReleaseCliOutput{
@@ -238,7 +238,7 @@ func mapReleasesToCliOutput(releases []*releases.Release) []*ReleaseCliOutput {
 	return output
 }
 
-func mapReleaseResultToCliOutput(result releases.ReleaseResult) ReleaseResultCliOutput {
+func mapReleaseResultToCliOutput(result core.ReleaseResult) ReleaseResultCliOutput {
 	if result.TimeToRestore == nil {
 		return ReleaseResultCliOutput{
 			IsSuccess:     result.IsSuccess,

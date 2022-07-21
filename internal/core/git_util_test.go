@@ -1,4 +1,4 @@
-package releases
+package core
 
 import "testing"
 
