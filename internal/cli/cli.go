@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/hmiyado/four-keys/internal/releases"
+	"github.com/hmiyado/four-keys/internal/core"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,7 +21,7 @@ func DefaultApp() *cli.App {
 }
 
 type DefaultCliOutput struct {
-	Option              *releases.Option     `json:"option"`
+	Option              *core.Option         `json:"option"`
 	DeploymentFrequency float64              `json:"deploymentFrequency"`
 	LeadTimeForChanges  DurationWithTimeUnit `json:"leadTimeForChanges"`
 	TimeToRestore       DurationWithTimeUnit `json:"timeToRestore"`
@@ -60,14 +60,14 @@ func defaultAction(ctx *cli.Context) error {
 
 }
 
-func getDeploymentFrequency(releases []*releases.Release, option releases.Option) float64 {
+func getDeploymentFrequency(releases []*core.Release, option core.Option) float64 {
 	duration := option.Until.Sub(option.Since)
 	daysCount := int(duration.Hours() / 24)
 	releasesCount := len(releases)
 	return float64(releasesCount) / float64(daysCount)
 }
 
-func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
+func getMeanLeadTimeForChanges(releases []*core.Release) time.Duration {
 	if len(releases) == 0 {
 		return time.Duration(0)
 	}
@@ -78,7 +78,7 @@ func getMeanLeadTimeForChanges(releases []*releases.Release) time.Duration {
 	return time.Duration(int64(sum) / int64(len(releases)))
 }
 
-func getTimeToRestore(releases []*releases.Release) time.Duration {
+func getTimeToRestore(releases []*core.Release) time.Duration {
 	sum := time.Duration(0)
 	countOfRestore := 0
 	for _, release := range releases {
@@ -92,7 +92,7 @@ func getTimeToRestore(releases []*releases.Release) time.Duration {
 	return sum / time.Duration(countOfRestore)
 }
 
-func getChangeFailureRate(releases []*releases.Release) float64 {
+func getChangeFailureRate(releases []*core.Release) float64 {
 	if len(releases) == 0 {
 		return 0
 	}
