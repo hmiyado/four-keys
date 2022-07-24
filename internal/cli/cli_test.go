@@ -11,7 +11,7 @@ import (
 
 func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
-	defaltApp := DefaultApp()
+	defaltApp := DefaultApp("")
 	testApp := &cli.App{
 		Flags:  defaltApp.Flags,
 		Action: defaltApp.Action,
@@ -39,7 +39,7 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 
 func TestDefaultAppShouldReturnTimeToRestoreAndChangeFailureRate(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
-	defaltApp := DefaultApp()
+	defaltApp := DefaultApp("")
 	testApp := &cli.App{
 		Flags:  defaltApp.Flags,
 		Action: defaltApp.Action,
@@ -58,7 +58,7 @@ func TestDefaultAppShouldReturnTimeToRestoreAndChangeFailureRate(t *testing.T) {
 
 func TestDefaultAppShouldRunWithoutOption(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
-	defaltApp := DefaultApp()
+	defaltApp := DefaultApp("")
 	testApp := &cli.App{
 		Flags:  defaltApp.Flags,
 		Action: defaltApp.Action,
