@@ -22,10 +22,10 @@ type Option struct {
 	Since time.Time `json:"since"`
 	// inclucive
 	Until            time.Time      `json:"until"`
-	IgnorePattern    *regexp.Regexp `json:"ignorePattern"`
-	FixCommitPattern *regexp.Regexp
-	StartTimerFunc   func(string) `json:"-"`
-	StopTimerFunc    func(string) `json:"-"`
+	IgnorePattern    *regexp.Regexp `json:"-"`
+	FixCommitPattern *regexp.Regexp `json:"-"`
+	StartTimerFunc   func(string)   `json:"-"`
+	StopTimerFunc    func(string)   `json:"-"`
 }
 
 func (r *Release) String() string {
