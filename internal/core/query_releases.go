@@ -80,7 +80,6 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
-	nextSuccessSourceIndex := -1
 	nextSuccessReleaseIndex := -1
 	isRestored := false
 	for i, source := range sources {
@@ -96,12 +95,11 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		option.StartTimer(timerKeyReleaseMetrics)
 
 		isSuccess := !isRestored
-		if nextSuccessSourceIndex > 0 && isSuccess && i != nextSuccessSourceIndex+1 {
-			timeToRestore := sources[nextSuccessSourceIndex].commit.Committer.When.Sub(sources[i-1].commit.Committer.When)
-			releases[nextSuccessReleaseIndex].Result.TimeToRestore = &timeToRestore
-		}
 		if isSuccess {
-			nextSuccessSourceIndex = i
+			if len(releases) > 0 && !releases[len(releases)-1].Result.IsSuccess {
+				timeToRestore := releases[nextSuccessReleaseIndex].Date.Sub(releases[len(releases)-1].Date)
+				releases[nextSuccessReleaseIndex].Result.TimeToRestore = &timeToRestore
+			}
 			nextSuccessReleaseIndex = len(releases)
 		}
 
