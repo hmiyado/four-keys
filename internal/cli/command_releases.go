@@ -36,6 +36,11 @@ func getCommandReleasesFlags() []cli.Flag {
 			Name:  "ignorePattern",
 			Usage: "ignore releases that matches the pattern(regex)",
 		},
+		&cli.StringFlag{
+			Name:        "fixCommitPattern",
+			Usage:       "commit that message matches fixCommitPattern is regarded fix commit",
+			DefaultText: "hotfix",
+		},
 		&cli.BoolFlag{
 			Name:  "debug",
 			Usage: "show debug message",
@@ -93,6 +98,14 @@ func (c *CliContextWrapper) IgnorePattern() (*regexp.Regexp, error) {
 	return regexp.Compile(pattern)
 }
 
+func (c *CliContextWrapper) FixCommitPattern() (*regexp.Regexp, error) {
+	pattern := c.context.String("fixCommitPattern")
+	if pattern == "" {
+		return nil, nil
+	}
+	return regexp.Compile(pattern)
+}
+
 func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 	c.StartTimer("Open Repository")
 	defer c.StopTimer("Open Repository")
@@ -119,17 +132,25 @@ func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 func (c *CliContextWrapper) Option() (*core.Option, error) {
 	ignorePattern, err := c.IgnorePattern()
 	if err != nil {
-		wrappedError := fmt.Errorf("[invalid ignore pattern] %v", err)
+		wrappedError := fmt.Errorf("[invalid ignorePattern] %v", err)
+		c.Error(wrappedError)
+		return nil, wrappedError
+	}
+
+	fixCommitPattern, err := c.FixCommitPattern()
+	if err != nil {
+		wrappedError := fmt.Errorf("[invalid fixCommitPattern] %v", err)
 		c.Error(wrappedError)
 		return nil, wrappedError
 	}
 
 	return &core.Option{
-		Since:          c.Since(),
-		Until:          c.Until(),
-		IgnorePattern:  ignorePattern,
-		StartTimerFunc: c.StartTimer,
-		StopTimerFunc:  c.StopTimer,
+		Since:            c.Since(),
+		Until:            c.Until(),
+		IgnorePattern:    ignorePattern,
+		FixCommitPattern: fixCommitPattern,
+		StartTimerFunc:   c.StartTimer,
+		StopTimerFunc:    c.StopTimer,
 	}, nil
 }
 
