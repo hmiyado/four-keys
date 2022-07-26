@@ -26,6 +26,7 @@ type Option struct {
 	FixCommitPattern *regexp.Regexp `json:"-"`
 	StartTimerFunc   func(string)   `json:"-"`
 	StopTimerFunc    func(string)   `json:"-"`
+	DebuglnFunc      func(...any)   `json:"-"`
 }
 
 func (r *Release) String() string {
@@ -70,6 +71,12 @@ func (o *Option) StopTimer(key string) {
 	}
 }
 
+func (o *Option) Debugln(a ...any) {
+	if o != nil && o.DebuglnFunc != nil {
+		o.DebuglnFunc(a...)
+	}
+}
+
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.StartTimer("QueryReleases")
@@ -77,6 +84,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.StartTimer("QueryTags")
 	tags := QueryTags(repository)
 	option.StopTimer("QueryTags")
+	option.Debugln("Tags count:", len(tags))
 	sources := getReleaseSourcesFromTags(repository, tags)
 
 	releases := make([]*Release, 0)
@@ -84,14 +92,16 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	isRestored := false
 	for i, source := range sources {
 		if option.shouldIgnore(source.tag.Name().Short()) {
+			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is ignored")
 			continue
 		}
 
 		if !option.isInTimeRange(source.commit.Committer.When) {
+			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is skipped for outof time range")
 			continue
 		}
 
-		timerKeyReleaseMetrics := fmt.Sprintf("source[%v]GetReleaseMetrics", i)
+		timerKeyReleaseMetrics := fmt.Sprintf("source[%v](%v)GetReleaseMetrics", i, source.tag.Name().Short())
 		option.StartTimer(timerKeyReleaseMetrics)
 
 		isSuccess := !isRestored

@@ -151,6 +151,7 @@ func (c *CliContextWrapper) Option() (*core.Option, error) {
 		FixCommitPattern: fixCommitPattern,
 		StartTimerFunc:   c.StartTimer,
 		StopTimerFunc:    c.StopTimer,
+		DebuglnFunc:      c.Debugln,
 	}, nil
 }
 
@@ -180,12 +181,13 @@ func (c *CliContextWrapper) StartTimer(key string) {
 			timerMap = make(map[string]time.Time)
 		}
 		timerMap[key] = time.Now()
+		c.Debugln("StartTimer:", key)
 	}
 }
 
 func (c *CliContextWrapper) StopTimer(key string) {
 	if c.isDebug() {
-		c.Debugln(key, ": ", time.Since(timerMap[key]))
+		c.Debugln("Stop_Timer:", key, "\t", time.Since(timerMap[key]))
 		delete(timerMap, key)
 	}
 }
