@@ -147,10 +147,10 @@ func TestGetCommandReleaseShouldBeFailWithInvalidIgnorePattern(t *testing.T) {
 	error := GetCommandReleases().Run(cCtx)
 
 	if error == nil {
-		t.Errorf("Invalid --until option does not return error. log: %v", output.String())
+		t.Errorf("Invalid --ignorePattern option does not return error. log: %v", output.String())
 	}
-	if !strings.Contains(error.Error(), "[invalid ignore pattern]") {
-		t.Errorf("Invalid --until option does not return error of --until. error: %v", error.Error())
+	if !strings.Contains(error.Error(), "[invalid ignorePattern]") {
+		t.Errorf("Invalid --ignorePattern option does not return error of --until. error: %v", error.Error())
 	}
 }
 func TestGetCommandReleaseShouldBeDebuggable(t *testing.T) {
