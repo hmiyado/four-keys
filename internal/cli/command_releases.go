@@ -151,6 +151,7 @@ func (c *CliContextWrapper) Option() (*core.Option, error) {
 		FixCommitPattern: fixCommitPattern,
 		StartTimerFunc:   c.StartTimer,
 		StopTimerFunc:    c.StopTimer,
+		DebuglnFunc:      c.Debugln,
 	}, nil
 }
 
