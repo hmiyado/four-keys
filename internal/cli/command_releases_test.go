@@ -147,10 +147,28 @@ func TestGetCommandReleaseShouldBeFailWithInvalidIgnorePattern(t *testing.T) {
 	error := GetCommandReleases().Run(cCtx)
 
 	if error == nil {
-		t.Errorf("Invalid --until option does not return error. log: %v", output.String())
+		t.Errorf("Invalid --ignorePattern option does not return error. log: %v", output.String())
 	}
-	if !strings.Contains(error.Error(), "[invalid ignore pattern]") {
-		t.Errorf("Invalid --until option does not return error of --until. error: %v", error.Error())
+	if !strings.Contains(error.Error(), "[invalid ignorePattern]") {
+		t.Errorf("Invalid --ignorePattern option does not return error of --until. error: %v", error.Error())
+	}
+}
+
+func TestGetCommandReleaseShouldBeFailWithInvalidFixCommitPattern(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	errOutput := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output, ErrWriter: errOutput}
+	set := flag.NewFlagSet("test", 0)
+	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--fixCommitPattern", "*"})
+
+	cCtx := cli.NewContext(app, set, nil)
+	error := GetCommandReleases().Run(cCtx)
+
+	if error == nil {
+		t.Errorf("Invalid --fixCommitPattern option does not return error. log: %v", output.String())
+	}
+	if !strings.Contains(error.Error(), "[invalid fixCommitPattern]") {
+		t.Errorf("Invalid --fixCommitPattern option does not return error of --until. error: %v", error.Error())
 	}
 }
 func TestGetCommandReleaseShouldBeDebuggable(t *testing.T) {
