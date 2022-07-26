@@ -21,10 +21,11 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until          time.Time      `json:"until"`
-	IgnorePattern  *regexp.Regexp `json:"ignorePattern"`
-	StartTimerFunc func(string)   `json:"-"`
-	StopTimerFunc  func(string)   `json:"-"`
+	Until            time.Time      `json:"until"`
+	IgnorePattern    *regexp.Regexp `json:"ignorePattern"`
+	FixCommitPattern *regexp.Regexp
+	StartTimerFunc   func(string) `json:"-"`
+	StopTimerFunc    func(string) `json:"-"`
 }
 
 func (r *Release) String() string {
@@ -47,6 +48,14 @@ func (o *Option) shouldIgnore(name string) bool {
 		return false
 	}
 	return o.IgnorePattern.MatchString(name)
+}
+
+func (o *Option) isFixedCommit(commitMessage string) bool {
+	if o == nil || o.FixCommitPattern == nil {
+		// commitMessage with "hotfix" is regarded as fixed commit by default
+		return strings.Contains(commitMessage, "hotfix")
+	}
+	return o.FixCommitPattern.MatchString(commitMessage)
 }
 
 func (o *Option) StartTimer(key string) {
@@ -103,7 +112,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		}
 		restoresPreRelease := false
 		err := traverseCommits(repository, preReleaseCommit, source.commit, func(c *object.Commit) error {
-			if strings.Contains(c.Message, "hotfix") {
+			if option.isFixedCommit(c.Message) {
 				restoresPreRelease = true
 			}
 			lastCommit = c
