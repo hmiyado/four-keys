@@ -29,8 +29,7 @@ $ four-keys | jq
 {
   "option": {
     "since": "2022-06-18T20:41:47.377195+09:00",
-    "until": "2022-07-18T20:41:47.377196+09:00",
-    "ignorePattern": null
+    "until": "2022-07-18T20:41:47.377196+09:00"
   },
   "deploymentFrequency": 0.1,
   "leadTimeForChanges": {
@@ -47,8 +46,7 @@ $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-
 {
   "option": {
     "since": "2015-12-20T00:00:00Z",
-    "until": "2016-01-12T23:59:59Z",
-    "ignorePattern": null
+    "until": "2016-01-12T23:59:59Z"
   },
   "releases": [
     {
