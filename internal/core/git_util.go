@@ -33,12 +33,7 @@ func traverseCommits(repository *git.Repository, olderCommit *object.Commit, new
 	iter, err := repository.Log(&git.LogOptions{
 		From:  newerCommit.Hash,
 		Since: since,
-		// Order: git.LogOrderDefault,
-		// Order: git.LogOrderDFS,
-		// Order: git.LogOrderDFSPost,
-		// Order: git.LogOrderBSF,
-		// Order: git.LogOrderCommitterTime,
-		// Order: git.LogOrderCommitterTime,
+		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
 		return ErrLogUnavailable
