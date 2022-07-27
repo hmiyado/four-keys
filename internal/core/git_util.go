@@ -51,8 +51,16 @@ func getReleaseSourcesFromTags(repository *git.Repository, tags []*plumbing.Refe
 	for _, tag := range tags {
 		commit, err := repository.CommitObject(tag.Hash())
 		if err != nil {
-			continue
+			tagObject, err := repository.TagObject(tag.Hash())
+			if err != nil {
+				continue
+			}
+			commit, err = tagObject.Commit()
+			if err != nil {
+				continue
+			}
 		}
+
 		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
 	}
 	sort.Slice(sources, func(i, j int) bool {

@@ -86,6 +86,7 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.StopTimer("QueryTags")
 	option.Debugln("Tags count:", len(tags))
 	sources := getReleaseSourcesFromTags(repository, tags)
+	option.Debugln("Sources count:", len(sources))
 
 	releases := make([]*Release, 0)
 	nextSuccessReleaseIndex := -1

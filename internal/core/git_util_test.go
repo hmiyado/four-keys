@@ -33,3 +33,14 @@ func TestQueryTagsShouldReturnEmptyForEmptyRepository(t *testing.T) {
 		t.Errorf("num of tags should be %d but %d", expectedTagNum, len(tags))
 	}
 }
+
+func TestQueryTagsShouldRecognizeTagObject(t *testing.T) {
+	tags := QueryTags(repositoryCli)
+	expectedTagsCount := 77
+
+	if len(tags) < expectedTagsCount {
+		// if QueryTags can't recognize tag object,
+		// tags count becomes much smaller than expectedTagsCount
+		t.Errorf("cli repository should have over %v tags but %v", expectedTagsCount, len(tags))
+	}
+}
