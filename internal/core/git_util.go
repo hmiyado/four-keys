@@ -33,7 +33,12 @@ func traverseCommits(repository *git.Repository, olderCommit *object.Commit, new
 	iter, err := repository.Log(&git.LogOptions{
 		From:  newerCommit.Hash,
 		Since: since,
-		Order: git.LogOrderCommitterTime,
+		// Order: git.LogOrderDefault,
+		// Order: git.LogOrderDFS,
+		// Order: git.LogOrderDFSPost,
+		// Order: git.LogOrderBSF,
+		// Order: git.LogOrderCommitterTime,
+		// Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
 		return ErrLogUnavailable
@@ -51,8 +56,16 @@ func getReleaseSourcesFromTags(repository *git.Repository, tags []*plumbing.Refe
 	for _, tag := range tags {
 		commit, err := repository.CommitObject(tag.Hash())
 		if err != nil {
-			continue
+			tagObject, err := repository.TagObject(tag.Hash())
+			if err != nil {
+				continue
+			}
+			commit, err = tagObject.Commit()
+			if err != nil {
+				continue
+			}
 		}
+
 		sources = append(sources, ReleaseSource{tag: tag, commit: commit})
 	}
 	sort.Slice(sources, func(i, j int) bool {
