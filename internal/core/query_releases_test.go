@@ -11,11 +11,14 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 )
 
-var repository, emptyRepository *git.Repository
+var repository, repositoryCli, emptyRepository *git.Repository
 
 func TestMain(m *testing.M) {
 	repository, _ = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 		URL: "https://github.com/go-git/go-git",
+	})
+	repositoryCli, _ = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+		URL: "https://github.com/urfave/cli",
 	})
 	emptyRepository, _ = git.Init(memory.NewStorage(), nil)
 
