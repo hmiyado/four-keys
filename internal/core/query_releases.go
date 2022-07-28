@@ -1,8 +1,12 @@
 package core
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,12 +25,13 @@ type Option struct {
 	// inclucive
 	Since time.Time `json:"since"`
 	// inclucive
-	Until            time.Time      `json:"until"`
-	IgnorePattern    *regexp.Regexp `json:"-"`
-	FixCommitPattern *regexp.Regexp `json:"-"`
-	StartTimerFunc   func(string)   `json:"-"`
-	StopTimerFunc    func(string)   `json:"-"`
-	DebuglnFunc      func(...any)   `json:"-"`
+	Until             time.Time      `json:"until"`
+	IgnorePattern     *regexp.Regexp `json:"-"`
+	FixCommitPattern  *regexp.Regexp `json:"-"`
+	IsLocalRepository bool           `json:"-"`
+	StartTimerFunc    func(string)   `json:"-"`
+	StopTimerFunc     func(string)   `json:"-"`
+	DebuglnFunc       func(...any)   `json:"-"`
 }
 
 func (r *Release) String() string {
@@ -114,23 +119,11 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 			nextSuccessReleaseIndex = len(releases)
 		}
 
-		var lastCommit *object.Commit
-		var preReleaseCommit *object.Commit
-		if i < len(sources)-1 {
-			preReleaseCommit = sources[i+1].commit
-		}
-		restoresPreRelease := false
-		err := traverseCommits(repository, preReleaseCommit, source.commit, func(c *object.Commit) error {
-			if option.isFixedCommit(c.Message) {
-				restoresPreRelease = true
-			}
-			lastCommit = c
-			return nil
-		})
-		isRestored = restoresPreRelease
 		leadTimeForChanges := time.Duration(0)
-		if err == nil && lastCommit != nil {
-			leadTimeForChanges = source.commit.Committer.When.Sub(lastCommit.Committer.When)
+		if option != nil && option.IsLocalRepository {
+			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByLocalGit(sources, i, option)
+		} else {
+			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByGoGit(sources, i, option, repository)
 		}
 		option.StopTimer(timerKeyReleaseMetrics)
 
@@ -144,4 +137,80 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 		})
 	}
 	return releases
+}
+
+// getIsRestoredAndLeadTimeForChangesByLocalGit gets isRestored and leadTimeForChanges by using local git command.
+// Local git command is about 10 times faster than go-git.
+func getIsRestoredAndLeadTimeForChangesByLocalGit(
+	sources []ReleaseSource,
+	i int,
+	option *Option,
+) (isRestored bool, leadTimeForChanges time.Duration) {
+	source := sources[i]
+	since := "1900-01-01"
+	if i < len(sources)-1 {
+		preReleaseCommit := sources[i+1].commit
+		since = preReleaseCommit.Committer.When.Format("2006-01-02")
+	}
+	restoresPreRelease := false
+	output, cmdErr := exec.Command("git", "log",
+		"--since", since,
+		`--format="%ct %s"`,
+		"--date-order",
+		source.commit.Hash.String(),
+	).Output()
+	lastLine := ""
+	if cmdErr == nil {
+		scanner := bufio.NewScanner(bytes.NewReader(output))
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if option.isFixedCommit(line) {
+				restoresPreRelease = true
+			}
+			lastLine = line
+		}
+	}
+	isRestored = restoresPreRelease
+	leadTimeForChanges = time.Duration(0)
+	if cmdErr == nil && lastLine != "" {
+		unixtimeString := strings.Split(lastLine, " ")[0]
+		unixtimeInt, err := strconv.ParseInt(unixtimeString, 10, 64)
+		if err == nil {
+			lastCommitWhen := time.Unix(unixtimeInt, 0)
+			leadTimeForChanges = source.commit.Committer.When.Sub(lastCommitWhen)
+		}
+	}
+	return isRestored, leadTimeForChanges
+}
+
+// getIsRestoredAndLeadTimeForChangesByGoGit gets isRestored and leadTimeForChanges by using go-git.
+// go-git is slow but it can use in-memory repository.
+// When repository is specified by url, repository is in-memory so that go-git is used.
+func getIsRestoredAndLeadTimeForChangesByGoGit(
+	sources []ReleaseSource,
+	i int,
+	option *Option,
+	repository *git.Repository,
+) (isRestored bool, leadTimeForChanges time.Duration) {
+	source := sources[i]
+	var lastCommit *object.Commit
+	var preReleaseCommit *object.Commit
+	if i < len(sources)-1 {
+		preReleaseCommit = sources[i+1].commit
+	}
+	restoresPreRelease := false
+	err := traverseCommits(repository, preReleaseCommit, source.commit, func(c *object.Commit) error {
+		if option.isFixedCommit(c.Message) {
+			restoresPreRelease = true
+		}
+		lastCommit = c
+		return nil
+	})
+	isRestored = restoresPreRelease
+	leadTimeForChanges = time.Duration(0)
+	if err == nil && lastCommit != nil {
+		leadTimeForChanges = source.commit.Committer.When.Sub(lastCommit.Committer.When)
+	}
+	return isRestored, leadTimeForChanges
 }
