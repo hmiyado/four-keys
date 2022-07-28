@@ -145,13 +145,14 @@ func (c *CliContextWrapper) Option() (*core.Option, error) {
 	}
 
 	return &core.Option{
-		Since:            c.Since(),
-		Until:            c.Until(),
-		IgnorePattern:    ignorePattern,
-		FixCommitPattern: fixCommitPattern,
-		StartTimerFunc:   c.StartTimer,
-		StopTimerFunc:    c.StopTimer,
-		DebuglnFunc:      c.Debugln,
+		Since:             c.Since(),
+		Until:             c.Until(),
+		IgnorePattern:     ignorePattern,
+		IsLocalRepository: c.context.String("repository") == "",
+		FixCommitPattern:  fixCommitPattern,
+		StartTimerFunc:    c.StartTimer,
+		StopTimerFunc:     c.StopTimer,
+		DebuglnFunc:       c.Debugln,
 	}, nil
 }
 
