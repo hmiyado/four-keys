@@ -194,6 +194,17 @@ func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
 	t.Errorf("releases does not have specified")
 }
 
+func TestQueryReleasesShouldReturnSameReleasesRepositoryIsLocalOrNot(t *testing.T) {
+	fourKeysRepository, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{})
+	releasesOfLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		IsLocalRepository: true,
+	})
+	releasesOfNotLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		IsLocalRepository: false,
+	})
+	assertReleasesAreEqual(t, releasesOfLocalRepository, releasesOfNotLocalRepository)
+}
+
 func parseDurationOrZero(str string) time.Duration {
 	d, err := time.ParseDuration(str)
 	if err != nil {
@@ -208,4 +219,31 @@ func parseDurationOrNil(str string) *time.Duration {
 		return nil
 	}
 	return &d
+}
+
+func assertReleasesAreEqual(t *testing.T, releasesExpected []*Release, releasesActual []*Release) {
+	if len(releasesActual) != len(releasesExpected) {
+		t.Errorf("releases does not have same length. expected: %v. actual: %v", len(releasesExpected), len(releasesActual))
+		return
+	}
+
+	unmatchedRelease := make([]int, 0)
+	for i, actual := range releasesActual {
+		expected := releasesExpected[i]
+		if actual.Equal(expected) {
+			continue
+		}
+		unmatchedRelease = append(unmatchedRelease, i)
+	}
+
+	if len(unmatchedRelease) == 0 {
+		return
+	}
+
+	for i := range unmatchedRelease {
+		actual := releasesActual[i]
+		expected := releasesExpected[i]
+		t.Logf("releases[%d] = %s. expected: %v", i, actual, expected)
+	}
+	t.Errorf("releases does not have specified")
 }
