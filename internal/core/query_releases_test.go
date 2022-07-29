@@ -149,11 +149,17 @@ func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
 }
 
 func TestQueryReleasesShouldReturnSameReleasesRepositoryIsLocalOrNot(t *testing.T) {
-	fourKeysRepository, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{})
+	since, _ := time.Parse("2006-01-02", "2022-01-01")
+	until := time.Now()
+	fourKeysRepository, _ := git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 	releasesOfLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		Since:             since,
+		Until:             until,
 		IsLocalRepository: true,
 	})
 	releasesOfNotLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		Since:             since,
+		Until:             until,
 		IsLocalRepository: false,
 	})
 	assertReleasesAreEqual(t, releasesOfLocalRepository, releasesOfNotLocalRepository)
@@ -194,7 +200,7 @@ func assertReleasesAreEqual(t *testing.T, releasesExpected []*Release, releasesA
 		return
 	}
 
-	for i := range unmatchedRelease {
+	for _, i := range unmatchedRelease {
 		actual := releasesActual[i]
 		expected := releasesExpected[i]
 		t.Logf("releases[%d] = %s. expected: %v", i, actual, expected)
