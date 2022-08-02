@@ -35,11 +35,14 @@ type Option struct {
 }
 
 func (r *Release) String() string {
-	return fmt.Sprintf("(Tag=%v, Date=%v, LeadTimeForChamges=%v, Result=%v)", r.Tag, r.Date, r.LeadTimeForChanges, r.Result.String())
+	return fmt.Sprintf("(Tag=%v, Date=%v, LeadTimeForChamges=%v, Result=%v)", r.Tag, r.Date, r.LeadTimeForChanges.Nanoseconds(), r.Result.String())
 }
 
 func (r *Release) Equal(another *Release) bool {
-	return r.Tag == another.Tag && r.Date.Equal(another.Date) && r.Result.Equal(another.Result)
+	return r.Tag == another.Tag &&
+		r.Date.Equal(another.Date) &&
+		r.LeadTimeForChanges.Nanoseconds() == another.LeadTimeForChanges.Nanoseconds() &&
+		r.Result.Equal(another.Result)
 }
 
 func (o *Option) isInTimeRange(time time.Time) bool {
@@ -150,7 +153,7 @@ func getIsRestoredAndLeadTimeForChangesByLocalGit(
 	since := "1900-01-01"
 	if i < len(sources)-1 {
 		preReleaseCommit := sources[i+1].commit
-		since = preReleaseCommit.Committer.When.Format("2006-01-02")
+		since = preReleaseCommit.Committer.When.Add(time.Second).Format("2006-01-02T15:04:05")
 	}
 	restoresPreRelease := false
 	output, cmdErr := exec.Command("git", "log",
@@ -173,8 +176,10 @@ func getIsRestoredAndLeadTimeForChangesByLocalGit(
 	}
 	isRestored = restoresPreRelease
 	leadTimeForChanges = time.Duration(0)
+	pattern, _ := regexp.Compile(`^[^\d]+(\d+) `)
 	if cmdErr == nil && lastLine != "" {
-		unixtimeString := strings.Split(lastLine, " ")[0]
+		matches := pattern.FindStringSubmatch(lastLine)
+		unixtimeString := matches[1]
 		unixtimeInt, err := strconv.ParseInt(unixtimeString, 10, 64)
 		if err == nil {
 			lastCommitWhen := time.Unix(unixtimeInt, 0)

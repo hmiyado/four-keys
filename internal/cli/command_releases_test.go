@@ -38,14 +38,14 @@ func TestGetCommandReleaseShouldHaveDefaultTimeRangeOption(t *testing.T) {
 
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
-	expectedReleasesNum := 60
 	days28, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*28))
 	days31, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*31))
 	duration := cliOutput.Option.Until.Sub(cliOutput.Option.Since)
-	if duration >= days28 && duration <= days31 {
+	if (duration-days28) > -time.Second && (duration-days31) < time.Second {
 		return
 	}
-	t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
+	t.Logf("option: %v", cliOutput.Option)
+	t.Errorf("time range should have abount 1 month(28-31days) but %v", duration)
 }
 
 func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntilIgnorePattern(t *testing.T) {
@@ -85,12 +85,33 @@ func TestGetCommandReleaseShouldHaveLeadTimeForChangesForEachReleases(t *testing
 	cCtx := cli.NewContext(app, set, nil)
 	GetCommandReleases().Run(cCtx)
 
-	// Output should be
-	// { "option":{"since":"2020-01-01T00:00:00Z","until":"2020-12-31T23:59:59Z","ignorePattern":null},
-	//   "releases":[
-	//     {"tag":"v5.2.0","date":"2020-10-09T11:49:30+02:00","leadTimeForChanges":{"value":130.77916666666667,"unit":"day"},"result":{"isSuccess":true}},
-	//     {"tag":"v5.1.0","date":"2020-05-24T19:25:08+02:00","leadTimeForChanges":{"value":66.9150462962963,"unit":"day"},"result":{"isSuccess":true}},
-	//     {"tag":"v5.0.0","date":"2020-03-15T21:18:32+01:00","leadTimeForChanges":{"value":224.73468749999998,"unit":"day"},"result":{"isSuccess":true}}]}⏎
+	// Output:
+	// {
+	//   "option": { "since": "2020-01-01T00:00:00Z", "until": "2020-12-31T23:59:59Z" },
+	//   "releases": [
+	//     {
+	//       "tag": "v5.2.0",
+	//       "date": "2020-10-09T11:49:30+02:00",
+	//       "leadTimeForChanges": { "value": 130.77916666666667, "unit": "day" },
+	//       "result": { "isSuccess": true, "timeToRestore": null }
+	//     },
+	//     {
+	//       "tag": "v5.1.0",
+	//       "date": "2020-05-24T19:25:08+02:00",
+	//       "leadTimeForChanges": { "value": 69.86515046296296, "unit": "day" },
+	//       "result": { "isSuccess": true, "timeToRestore": null }
+	//     },
+	//     {
+	//       "tag": "v5.0.0",
+	//       "date": "2020-03-15T21:18:32+01:00",
+	//       "leadTimeForChanges": {
+	//         "value": 224.73468749999998,
+	//         "unit": "day"
+	//       },
+	//       "result": { "isSuccess": true, "timeToRestore": null }
+	//     }
+	//   ]
+	// }
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
 	expectedReleasesNum := 3
@@ -98,7 +119,7 @@ func TestGetCommandReleaseShouldHaveLeadTimeForChangesForEachReleases(t *testing
 		t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
 	}
 	util.AssertIsNearBy(t, cliOutput.Releases[0].LeadTimeForChanges.Present(), 130.77916666666667, 0.01)
-	util.AssertIsNearBy(t, cliOutput.Releases[1].LeadTimeForChanges.Present(), 66.9150462962963, 0.01)
+	util.AssertIsNearBy(t, cliOutput.Releases[1].LeadTimeForChanges.Present(), 69.86515046296296, 0.01)
 	util.AssertIsNearBy(t, cliOutput.Releases[2].LeadTimeForChanges.Present(), 224.73468749999998, 0.01)
 }
 

@@ -80,9 +80,9 @@ func TestQueryReleasesShouldReturnReleasesWithSpecifiedTimeRange(t *testing.T) {
 		Since: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		Until: time.Date(2020, 12, 31, 23, 59, 59, 999, time.UTC),
 	})
-	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60)), Result: ReleaseResult{IsSuccess: true}}
-	tag5_1_0 := &Release{Tag: "v5.1.0", Date: time.Date(2020, 5, 24, 19, 25, 8, 0, time.FixedZone("+0200", 2*60*60)), Result: ReleaseResult{IsSuccess: true}}
-	tag5_2_0 := &Release{Tag: "v5.2.0", Date: time.Date(2020, 10, 9, 11, 49, 30, 0, time.FixedZone("+0200", 2*60*60)), Result: ReleaseResult{IsSuccess: true}}
+	tag5_2_0 := &Release{Tag: "v5.2.0", Date: time.Date(2020, 10, 9, 11, 49, 30, 0, time.FixedZone("+0200", 2*60*60)), LeadTimeForChanges: time.Duration(11299320000000000), Result: ReleaseResult{IsSuccess: true}}
+	tag5_1_0 := &Release{Tag: "v5.1.0", Date: time.Date(2020, 5, 24, 19, 25, 8, 0, time.FixedZone("+0200", 2*60*60)), LeadTimeForChanges: time.Duration(6036349000000000), Result: ReleaseResult{IsSuccess: true}}
+	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60)), LeadTimeForChanges: time.Duration(19417077000000000), Result: ReleaseResult{IsSuccess: true}}
 	expectedTags := []*Release{tag5_2_0, tag5_1_0, tag5_0_0}
 
 	assertReleasesAreEqual(t, expectedTags, releases)
@@ -114,7 +114,7 @@ func TestQueryReleasesShouldHaveReleaseResult(t *testing.T) {
 	tag2_1_0 := &Release{
 		Tag:                "v2.1.0",
 		Date:               time.Date(2015, 12, 23, 9, 48, 11, 0, time.FixedZone("+0100", 1*60*60)),
-		LeadTimeForChanges: parseDurationOrZero(""),
+		LeadTimeForChanges: time.Duration(894609000000000),
 		Result: ReleaseResult{
 			IsSuccess:     true,
 			TimeToRestore: nil,
@@ -149,11 +149,20 @@ func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
 }
 
 func TestQueryReleasesShouldReturnSameReleasesRepositoryIsLocalOrNot(t *testing.T) {
-	fourKeysRepository, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{})
+	since, _ := time.Parse("2006-01-02", "2022-01-01")
+	until := time.Now()
+	ignorePattern := regexp.MustCompile(`v[^1].[^2].[^0]|v1.[^2].[^0]|v1.2.[^0]|v1.[^2].0`)
+	fourKeysRepository, _ := git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 	releasesOfLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		Since:             since,
+		Until:             until,
+		IgnorePattern:     ignorePattern,
 		IsLocalRepository: true,
 	})
 	releasesOfNotLocalRepository := QueryReleases(fourKeysRepository, &Option{
+		Since:             since,
+		Until:             until,
+		IgnorePattern:     ignorePattern,
 		IsLocalRepository: false,
 	})
 	assertReleasesAreEqual(t, releasesOfLocalRepository, releasesOfNotLocalRepository)
@@ -194,7 +203,7 @@ func assertReleasesAreEqual(t *testing.T, releasesExpected []*Release, releasesA
 		return
 	}
 
-	for i := range unmatchedRelease {
+	for _, i := range unmatchedRelease {
 		actual := releasesActual[i]
 		expected := releasesExpected[i]
 		t.Logf("releases[%d] = %s. expected: %v", i, actual, expected)

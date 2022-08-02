@@ -27,7 +27,7 @@ func traverseCommits(repository *git.Repository, olderCommit *object.Commit, new
 	}
 	var since *time.Time
 	if olderCommit != nil {
-		tmp := olderCommit.Committer.When.AddDate(0, 0, 1)
+		tmp := olderCommit.Committer.When.Add(time.Second)
 		since = &tmp
 	}
 	iter, err := repository.Log(&git.LogOptions{
