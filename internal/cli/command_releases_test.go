@@ -38,14 +38,14 @@ func TestGetCommandReleaseShouldHaveDefaultTimeRangeOption(t *testing.T) {
 
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
-	expectedReleasesNum := 60
 	days28, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*28))
 	days31, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*31))
 	duration := cliOutput.Option.Until.Sub(cliOutput.Option.Since)
 	if duration >= days28 && duration <= days31 {
 		return
 	}
-	t.Errorf("releases should have %v releases but %v", expectedReleasesNum, len(cliOutput.Releases))
+	t.Logf("option: %v", cliOutput.Option)
+	t.Errorf("time range should have abount 1 month(28-31days) but %v", duration)
 }
 
 func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntilIgnorePattern(t *testing.T) {
