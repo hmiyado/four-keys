@@ -41,7 +41,7 @@ func TestGetCommandReleaseShouldHaveDefaultTimeRangeOption(t *testing.T) {
 	days28, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*28))
 	days31, _ := time.ParseDuration(fmt.Sprintf("%vh", 24*31))
 	duration := cliOutput.Option.Until.Sub(cliOutput.Option.Since)
-	if duration >= days28 && duration <= days31 {
+	if (duration-days28) > -time.Second && (duration-days31) < time.Second {
 		return
 	}
 	t.Logf("option: %v", cliOutput.Option)
