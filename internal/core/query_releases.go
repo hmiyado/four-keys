@@ -153,7 +153,7 @@ func getIsRestoredAndLeadTimeForChangesByLocalGit(
 	since := "1900-01-01"
 	if i < len(sources)-1 {
 		preReleaseCommit := sources[i+1].commit
-		since = preReleaseCommit.Committer.When.Format("2006-01-02")
+		since = preReleaseCommit.Committer.When.Add(time.Second).Format("2006-01-02T15:04:05")
 	}
 	restoresPreRelease := false
 	output, cmdErr := exec.Command("git", "log",
@@ -176,8 +176,10 @@ func getIsRestoredAndLeadTimeForChangesByLocalGit(
 	}
 	isRestored = restoresPreRelease
 	leadTimeForChanges = time.Duration(0)
+	pattern, _ := regexp.Compile(`^[^\d]+(\d+) `)
 	if cmdErr == nil && lastLine != "" {
-		unixtimeString := strings.Split(lastLine, " ")[0]
+		matches := pattern.FindStringSubmatch(lastLine)
+		unixtimeString := matches[1]
 		unixtimeInt, err := strconv.ParseInt(unixtimeString, 10, 64)
 		if err == nil {
 			lastCommitWhen := time.Unix(unixtimeInt, 0)
