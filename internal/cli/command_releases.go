@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/hmiyado/four-keys/internal/core"
 	"github.com/urfave/cli/v2"
@@ -19,6 +20,11 @@ func getCommandReleasesFlags() []cli.Flag {
 			Name:        "repository",
 			Usage:       "the remote repository url. repository will be cloned in memory",
 			DefaultText: "local repository of current directory",
+		},
+		&cli.StringFlag{
+			Name:        "accessToken",
+			Usage:       "GitHub access token to clone private repository",
+			DefaultText: "no access token",
 		},
 		&cli.TimestampFlag{
 			Name:        "since",
@@ -110,8 +116,16 @@ func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 	c.StartTimer("Open Repository")
 	defer c.StopTimer("Open Repository")
 	repositoryUrl := c.context.String("repository")
+	accessToken := c.context.String("accessToken")
 	var repository *git.Repository
 	var error error
+	var auth *http.BasicAuth
+	if accessToken != "" {
+		auth = &http.BasicAuth{
+			Username: "four-keys",
+			Password: accessToken,
+		}
+	}
 	if repositoryUrl == "" {
 		repository, error = git.PlainOpenWithOptions("./", &git.PlainOpenOptions{DetectDotGit: true, EnableDotGitCommonDir: false})
 		if error != nil {
@@ -119,7 +133,8 @@ func (c *CliContextWrapper) Repository() (*git.Repository, error) {
 		}
 	} else {
 		repository, error = git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-			URL: repositoryUrl,
+			Auth: auth,
+			URL:  repositoryUrl,
 		})
 		if error != nil {
 			return nil, fmt.Errorf("cannot clone repository: %v", repositoryUrl)
