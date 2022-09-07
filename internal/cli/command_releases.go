@@ -24,7 +24,7 @@ func getCommandReleasesFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:        "accessToken",
 			Usage:       "GitHub access token to clone private repository",
-			DefaultText: "local repository of current directory",
+			DefaultText: "no access token",
 		},
 		&cli.TimestampFlag{
 			Name:        "since",
