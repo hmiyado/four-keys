@@ -1,6 +1,6 @@
 # four-keys
 
-measure four keys metrics
+measure four keys metrics.
 
 $$
 DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
@@ -17,6 +17,8 @@ $$
 $$
 ChangeFailureRate = (NumOfFailureRelease) / (NumOfReleases)
 $$
+
+More detail for japanese: [Qiita](https://qiita.com/hmiyado/items/fb9b0409ab479942ad4c)
 
 ## Install
 
