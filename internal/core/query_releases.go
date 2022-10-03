@@ -85,6 +85,23 @@ func (o *Option) Debugln(a ...any) {
 	}
 }
 
+// ignoreReleases filters sources by option.IgnorePattern.
+// This doesn't filter any sources and returns same sources if no ignore option.
+func ignoreReleases(sources []ReleaseSource, option *Option) []ReleaseSource {
+	if option == nil || option.IgnorePattern == nil {
+		return sources
+	}
+	filteredSources := make([]ReleaseSource, 0)
+	for _, source := range sources {
+		if option.shouldIgnore(source.tag.Name().Short()) {
+			option.Debugln(source.tag.Name().Short(), " is ignored")
+			continue
+		}
+		filteredSources = append(filteredSources, source)
+	}
+	return filteredSources
+}
+
 // QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
 func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.StartTimer("QueryReleases")
@@ -94,17 +111,13 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.StopTimer("QueryTags")
 	option.Debugln("Tags count:", len(tags))
 	sources := getReleaseSourcesFromTags(repository, tags)
+	sources = ignoreReleases(sources, option)
 	option.Debugln("Sources count:", len(sources))
 
 	releases := make([]*Release, 0)
 	nextSuccessReleaseIndex := -1
 	isRestored := false
 	for i, source := range sources {
-		if option.shouldIgnore(source.tag.Name().Short()) {
-			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is ignored")
-			continue
-		}
-
 		if !option.isInTimeRange(source.commit.Committer.When) {
 			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is skipped for outof time range")
 			continue
