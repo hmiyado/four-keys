@@ -126,26 +126,24 @@ func TestQueryReleasesShouldHaveReleaseResult(t *testing.T) {
 }
 
 func TestQueryReleasesShouldReturnReleasesWithIgnorePattern(t *testing.T) {
-	pattern, _ := regexp.Compile(`v5\.1\.0|v5\.2\.0`)
+	pattern, _ := regexp.Compile(`v5\.0\.0|v5\.2\.0`)
 	releases := QueryReleases(repository, &Option{
 		Since:         time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 		Until:         time.Date(2020, 12, 31, 23, 59, 59, 999, time.UTC),
 		IgnorePattern: pattern,
 	})
-	tag5_0_0 := &Release{Tag: "v5.0.0", Date: time.Date(2020, 3, 15, 21, 18, 32, 0, time.FixedZone("+0100", 1*60*60))}
-	expectedTags := []*Release{tag5_0_0}
-
-	if len(releases) != len(expectedTags) {
-		t.Errorf("releases does not have expected tag num. expected: %v. actual: %v", len(expectedTags), len(releases))
-		return
+	tag5_1_0 := &Release{
+		Tag:                "v5.1.0",
+		Date:               time.Date(2020, 5, 24, 19, 25, 8, 0, time.FixedZone("+0200", 2*60*60)),
+		LeadTimeForChanges: time.Duration(25454673000000000),
+		Result: ReleaseResult{
+			IsSuccess:     true,
+			TimeToRestore: nil,
+		},
 	}
+	expectedTags := []*Release{tag5_1_0}
 
-	if releases[0].Tag == tag5_0_0.Tag {
-		return
-	}
-
-	t.Logf("expected: %v, actual: %v", tag5_0_0, releases[0])
-	t.Errorf("releases does not have specified")
+	assertReleasesAreEqual(t, expectedTags, releases)
 }
 
 func TestQueryReleasesShouldReturnSameReleasesRepositoryIsLocalOrNot(t *testing.T) {
