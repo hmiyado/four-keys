@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -104,12 +105,12 @@ func ignoreReleases(sources []ReleaseSource, option *Option) []ReleaseSource {
 }
 
 func createReleasesBySources(sources []ReleaseSource, option *Option, repository *git.Repository) []*Release {
-	releases := make([]*Release, 0)
-
-	for i, source := range sources {
+	releasesChannel := make(chan *Release)
+	createReleaseOrNil := func(source ReleaseSource, i int) {
 		if !option.isInTimeRange(source.commit.Committer.When) {
 			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is skipped for outof time range")
-			continue
+			releasesChannel <- nil
+			return
 		}
 
 		timerEachReleases := fmt.Sprintf("source[%v](%v)GetEachReleases", i, source.tag.Name().Short())
@@ -124,7 +125,7 @@ func createReleasesBySources(sources []ReleaseSource, option *Option, repository
 		}
 		option.StopTimer(timerEachReleases)
 
-		releases = append(releases, &Release{
+		releasesChannel <- &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: leadTimeForChanges,
@@ -132,9 +133,22 @@ func createReleasesBySources(sources []ReleaseSource, option *Option, repository
 				IsSuccess: false,
 			},
 			isRestored: isRestored,
-		})
-
+		}
 	}
+	for i, source := range sources {
+		go createReleaseOrNil(source, i)
+	}
+
+	releases := make([]*Release, 0)
+	for range sources {
+		release := <-releasesChannel
+		if release != nil {
+			releases = append(releases, release)
+		}
+	}
+	sort.Slice(releases, func(i int, j int) bool {
+		return releases[i].Date.After(releases[j].Date)
+	})
 
 	return releases
 }
