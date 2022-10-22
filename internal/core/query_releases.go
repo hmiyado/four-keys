@@ -103,18 +103,7 @@ func ignoreReleases(sources []ReleaseSource, option *Option) []ReleaseSource {
 	return filteredSources
 }
 
-// QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
-func QueryReleases(repository *git.Repository, option *Option) []*Release {
-	option.StartTimer("QueryReleases")
-	defer option.StopTimer("QueryReleases")
-	option.StartTimer("QueryTags")
-	tags := QueryTags(repository)
-	option.StopTimer("QueryTags")
-	option.Debugln("Tags count:", len(tags))
-	sources := getReleaseSourcesFromTags(repository, tags)
-	sources = ignoreReleases(sources, option)
-	option.Debugln("Sources count:", len(sources))
-
+func createReleasesBySources(sources []ReleaseSource, option *Option, repository *git.Repository) []*Release {
 	releases := make([]*Release, 0)
 
 	for i, source := range sources {
@@ -147,6 +136,10 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 
 	}
 
+	return releases
+}
+
+func setReleaseResultForEachRelease(releases []*Release, option *Option) {
 	var nextSuccessRelease *Release
 	for i, release := range releases {
 		if !option.isInTimeRange(release.Date) {
@@ -174,6 +167,22 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 
 		option.StopTimer(timerKeyReleaseMetrics)
 	}
+}
+
+// QueryReleases returns Releases sorted by date (first item is the oldest and last item is the newest)
+func QueryReleases(repository *git.Repository, option *Option) []*Release {
+	option.StartTimer("QueryReleases")
+	defer option.StopTimer("QueryReleases")
+	option.StartTimer("QueryTags")
+	tags := QueryTags(repository)
+	option.StopTimer("QueryTags")
+	option.Debugln("Tags count:", len(tags))
+	sources := getReleaseSourcesFromTags(repository, tags)
+	sources = ignoreReleases(sources, option)
+	option.Debugln("Sources count:", len(sources))
+
+	releases := createReleasesBySources(sources, option, repository)
+	setReleaseResultForEachRelease(releases, option)
 	return releases
 }
 
