@@ -19,6 +19,7 @@ type Release struct {
 	Date               time.Time     `json:"date"`
 	LeadTimeForChanges time.Duration `json:"leadTimeForChanges"`
 	Result             ReleaseResult `json:"result"`
+	isRestored         bool          `json:-`
 }
 
 type Option struct {
@@ -115,42 +116,63 @@ func QueryReleases(repository *git.Repository, option *Option) []*Release {
 	option.Debugln("Sources count:", len(sources))
 
 	releases := make([]*Release, 0)
-	nextSuccessReleaseIndex := -1
-	isRestored := false
+
 	for i, source := range sources {
 		if !option.isInTimeRange(source.commit.Committer.When) {
 			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is skipped for outof time range")
 			continue
 		}
 
-		timerKeyReleaseMetrics := fmt.Sprintf("source[%v](%v)GetReleaseMetrics", i, source.tag.Name().Short())
-		option.StartTimer(timerKeyReleaseMetrics)
-
-		isSuccess := !isRestored
-		if isSuccess {
-			if len(releases) > 0 && !releases[len(releases)-1].Result.IsSuccess {
-				timeToRestore := releases[nextSuccessReleaseIndex].Date.Sub(releases[len(releases)-1].Date)
-				releases[nextSuccessReleaseIndex].Result.TimeToRestore = &timeToRestore
-			}
-			nextSuccessReleaseIndex = len(releases)
-		}
+		timerEachReleases := fmt.Sprintf("source[%v](%v)GetEachReleases", i, source.tag.Name().Short())
+		option.StartTimer(timerEachReleases)
 
 		leadTimeForChanges := time.Duration(0)
+		isRestored := false
 		if option != nil && option.IsLocalRepository {
 			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByLocalGit(sources, i, option)
 		} else {
 			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByGoGit(sources, i, option, repository)
 		}
-		option.StopTimer(timerKeyReleaseMetrics)
+		option.StopTimer(timerEachReleases)
 
 		releases = append(releases, &Release{
 			Tag:                source.tag.Name().Short(),
 			Date:               source.commit.Committer.When,
 			LeadTimeForChanges: leadTimeForChanges,
 			Result: ReleaseResult{
-				IsSuccess: isSuccess,
+				IsSuccess: false,
 			},
+			isRestored: isRestored,
 		})
+
+	}
+
+	var nextSuccessRelease *Release
+	for i, release := range releases {
+		if !option.isInTimeRange(release.Date) {
+			option.Debugln("release[", i, "](", release.Tag, ") is skipped for outof time range")
+			continue
+		}
+
+		timerKeyReleaseMetrics := fmt.Sprintf("release[%v](%v)GetReleaseMetrics", i, release.Tag)
+		option.StartTimer(timerKeyReleaseMetrics)
+
+		isSuccess := true
+		var nextRelease *Release
+		if i > 0 {
+			nextRelease = releases[i-1]
+			isSuccess = !nextRelease.isRestored
+		}
+		release.Result.IsSuccess = isSuccess
+		if isSuccess {
+			if nextRelease != nil && !nextRelease.Result.IsSuccess {
+				timeToRestore := nextSuccessRelease.Date.Sub(releases[i-1].Date)
+				nextSuccessRelease.Result.TimeToRestore = &timeToRestore
+			}
+			nextSuccessRelease = release
+		}
+
+		option.StopTimer(timerKeyReleaseMetrics)
 	}
 	return releases
 }
