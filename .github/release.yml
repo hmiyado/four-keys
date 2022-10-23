@@ -3,6 +3,9 @@ changelog:
     - title: 🛠 Breaking Changes
       labels:
         - breaking changes
+    - tilte: 📚 Dependency Updates
+      labels:
+        - dependency updates
     - title: 🚢 Other Changes
       labels:
         - "*"
