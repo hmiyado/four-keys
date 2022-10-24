@@ -52,16 +52,17 @@ func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntilIgnoreP
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{
+	args := []string{
 		"releases",
 		"--repository", "https://github.com/go-git/go-git",
 		"--since", "2020-01-01",
 		"--until", "2020-12-31",
 		"--ignorePattern", "v5\\.2\\.0",
-	})
+	}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	GetCommandReleases().Run(cCtx)
+	GetCommandReleases().Run(cCtx, args...)
 
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
@@ -75,15 +76,16 @@ func TestGetCommandReleaseShouldHaveLeadTimeForChangesForEachReleases(t *testing
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{
+	args := []string{
 		"releases",
 		"--repository", "https://github.com/go-git/go-git",
 		"--since", "2020-01-01",
 		"--until", "2020-12-31",
-	})
+	}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	GetCommandReleases().Run(cCtx)
+	GetCommandReleases().Run(cCtx, args...)
 
 	// Output:
 	// {
@@ -125,12 +127,14 @@ func TestGetCommandReleaseShouldHaveLeadTimeForChangesForEachReleases(t *testing
 
 func TestGetCommandReleaseShouldBeFailWithInvalidSince(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
-	app := &cli.App{Writer: output}
+	errOutput := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output, ErrWriter: errOutput}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--since", "invalidtext"})
+	args := []string{"releases", "--repository", "https://github.com/go-git/go-git", "--since", "invalidtext"}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	error := GetCommandReleases().Run(cCtx)
+	error := GetCommandReleases().Run(cCtx, args...)
 
 	if error == nil {
 		t.Errorf("Invalid --since option does not return error. log: %v", output.String())
@@ -144,10 +148,11 @@ func TestGetCommandReleaseShouldBeFailWithInvalidUntil(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--until", "invalidtext"})
+	args := []string{"releases", "--repository", "https://github.com/go-git/go-git", "--until", "invalidtext"}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	error := GetCommandReleases().Run(cCtx)
+	error := GetCommandReleases().Run(cCtx, args...)
 
 	if error == nil {
 		t.Errorf("Invalid --until option does not return error. log: %v", output.String())
@@ -162,10 +167,11 @@ func TestGetCommandReleaseShouldBeFailWithInvalidIgnorePattern(t *testing.T) {
 	errOutput := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output, ErrWriter: errOutput}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--ignorePattern", "*"})
+	args := []string{"releases", "--repository", "https://github.com/go-git/go-git", "--ignorePattern", "*"}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	error := GetCommandReleases().Run(cCtx)
+	error := GetCommandReleases().Run(cCtx, args...)
 
 	if error == nil {
 		t.Errorf("Invalid --ignorePattern option does not return error. log: %v", output.String())
@@ -180,10 +186,11 @@ func TestGetCommandReleaseShouldBeFailWithInvalidFixCommitPattern(t *testing.T) 
 	errOutput := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output, ErrWriter: errOutput}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{"releases", "--repository", "https://github.com/go-git/go-git", "--fixCommitPattern", "*"})
+	args := []string{"releases", "--repository", "https://github.com/go-git/go-git", "--fixCommitPattern", "*"}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	error := GetCommandReleases().Run(cCtx)
+	error := GetCommandReleases().Run(cCtx, args...)
 
 	if error == nil {
 		t.Errorf("Invalid --fixCommitPattern option does not return error. log: %v", output.String())

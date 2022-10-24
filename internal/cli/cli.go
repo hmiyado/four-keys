@@ -18,6 +18,7 @@ func DefaultApp(version string) *cli.App {
 		Commands: []*cli.Command{
 			GetCommandReleases(),
 		},
+		OnUsageError: onUsageError,
 	}
 }
 
