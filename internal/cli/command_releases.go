@@ -54,6 +54,10 @@ func getCommandReleasesFlags() []cli.Flag {
 	}
 }
 
+func onUsageError(cCtx *cli.Context, err error, isSubcommand bool) error {
+	return err
+}
+
 type ReleasesCliOutput struct {
 	Option   *core.Option        `json:"option"`
 	Releases []*ReleaseCliOutput `json:"releases"`
@@ -247,6 +251,7 @@ func GetCommandReleases() *cli.Command {
 			context.Write(releasesJson)
 			return nil
 		},
+		OnUsageError: onUsageError,
 	}
 }
 
