@@ -52,16 +52,17 @@ func TestGetCommandReleaseShouldReturnReleasesWithRepositoryUrlSinceUntilIgnoreP
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
 	set := flag.NewFlagSet("test", 0)
-	_ = set.Parse([]string{
+	args := []string{
 		"releases",
 		"--repository", "https://github.com/go-git/go-git",
 		"--since", "2020-01-01",
 		"--until", "2020-12-31",
 		"--ignorePattern", "v5\\.2\\.0",
-	})
+	}
+	_ = set.Parse(args)
 
 	cCtx := cli.NewContext(app, set, nil)
-	GetCommandReleases().Run(cCtx)
+	GetCommandReleases().Run(cCtx, args...)
 
 	var cliOutput ReleasesCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
