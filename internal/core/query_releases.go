@@ -135,7 +135,8 @@ func getIsRestoredAndLeadTimeForChangesByLocalGit(
 	option *Option,
 ) (isRestored bool, leadTimeForChanges time.Duration) {
 	source := sources[i]
-	since := "1900-01-01"
+	// Epoch time
+	since := "1970-01-01T00:00:00+0000"
 	if i < len(sources)-1 {
 		preReleaseCommit := sources[i+1].commit
 		since = preReleaseCommit.Committer.When.Add(time.Second).Format("2006-01-02T15:04:05")
