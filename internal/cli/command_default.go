@@ -32,10 +32,10 @@ func defaultAction(ctx *cli.Context) error {
 	context.StartTimer("Calculate metrics")
 	outputJson, err := json.Marshal(&DefaultCliOutput{
 		Option:              option,
-		DeploymentFrequency: getDeploymentFrequency(releases, *option),
-		LeadTimeForChanges:  getDurationWithTimeUnit(getMeanLeadTimeForChanges(releases)),
-		TimeToRestore:       getDurationWithTimeUnit(getTimeToRestore(releases)),
-		ChangeFailureRate:   getChangeFailureRate(releases),
+		DeploymentFrequency: core.GetDeploymentFrequency(releases, *option),
+		LeadTimeForChanges:  getDurationWithTimeUnit(core.GetMeanLeadTimeForChanges(releases)),
+		TimeToRestore:       getDurationWithTimeUnit(core.GetTimeToRestore(releases)),
+		ChangeFailureRate:   core.GetChangeFailureRate(releases),
 	})
 	context.StopTimer("Calculate metrics")
 	if err != nil {
