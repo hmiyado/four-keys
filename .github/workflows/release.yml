@@ -14,11 +14,11 @@ jobs:
         goarch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v3
-      - uses: wangyoucao577/go-release-action@v1.33
+      - uses: wangyoucao577/go-release-action@v1.36
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: "1.19"
+          goversion: ./go.mod
           build_command: "make build"
           binary_name: "four-keys"
