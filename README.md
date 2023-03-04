@@ -94,6 +94,39 @@ $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-
 }
 ```
 
+## Details of metrics
+
+```mermaid
+gitGraph:
+  commit id: "m1" tag: "v1-2023-04-01"
+  branch develop
+  commit id: "d1-2023-04-05"
+  commit id: "d2-2023-04-10"
+  checkout main
+  merge develop id: "m2" tag: "v2-2023-04-15" type: REVERSE
+  branch hotfix
+  checkout hotfix
+  commit id: "h1-2023-04-25"
+  commit id: "h2-2023-04-27"
+  checkout main
+  merge hotfix id: "hotfix1" tag: "v3-2023-04-30"
+```
+
+Assume above case, there are two successful releases and one failure release.
+
+- version "v1-2023-04-01" was successfully released
+- version "v2-2023-04-15" was released but it was failure
+  - $$LeadTeimeForChanges = 2023{\text -}04{\text -}15 - 2023{\text -}04{\text -}05 = 10$$
+- version "v3-2023-04-30" hotfixed "v2" and successfully released
+  - $$LeadTeimeForChanges = 2023{\text -}04{\text -}30 - 2023{\text -}04{\text -}25 = 5$$
+
+In this case, four keys in 2023-04(30 days) becomes below.
+
+$$DeploymentFrequency = 2 / 30 = 0.067 $$
+$$LeadTimeForChanges = mean((leadTime_{v2}), (leadTime_{v3})) = (10 + 5)/2 = 7.5 $$
+$$TimeToRestore = mean(timeToRestore_{v2v3}) = ((2023{\text -}04{\text -}30 - 2023{\text -}04{\text -}15))/1 = 15$$
+$$ChangeFailureRate = 1 / 3 = 0.33 $$
+
 ## License
 
 see [LICENSE](./LICENSE)
