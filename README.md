@@ -123,8 +123,11 @@ Assume above case, there are two successful releases and one failure release.
 In this case, four keys in 2023-04(30 days) becomes below.
 
 $$DeploymentFrequency = 2 / 30 = 0.067 $$
+
 $$LeadTimeForChanges = mean((leadTime_{v2}), (leadTime_{v3})) = (10 + 5)/2 = 7.5 $$
+
 $$TimeToRestore = mean(timeToRestore_{v2v3}) = ((2023{\text -}04{\text -}30 - 2023{\text -}04{\text -}15))/1 = 15$$
+
 $$ChangeFailureRate = 1 / 3 = 0.33 $$
 
 ## License
