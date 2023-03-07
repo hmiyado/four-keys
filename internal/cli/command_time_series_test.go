@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"strings"
 	"testing"
 	"time"
 
@@ -56,6 +57,26 @@ func TestGetCommandTimeSeriesShouldReturnTimeSeriesInDayly(t *testing.T) {
 	}
 }
 
+func TestGetCommandTimeSeriesShouldReturnErrorWhenDurationIsLessThanDay(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output}
+	set := flag.NewFlagSet("test", 0)
+	args := []string{
+		"timeSeries",
+		"--repository", "https://github.com/hmiyado/four-keys",
+		"--since", "2022-10-01",
+		"--until", "2022-10-01",
+		"--interval", "day"}
+	_ = set.Parse(args)
+
+	cCtx := cli.NewContext(app, set, nil)
+	err := GetCommandTimeSeries().Run(cCtx, args...)
+
+	if !strings.Contains(err.Error(), "Interval is too short") {
+		t.Errorf("timeSeries should return error when duration is less than day but stderr: %v stdout: %v", err, output.String())
+	}
+}
+
 func TestGetCommandTimeSeriesShouldReturnTimeSeriesInWeekly(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
@@ -84,6 +105,26 @@ func TestGetCommandTimeSeriesShouldReturnTimeSeriesInWeekly(t *testing.T) {
 	}
 }
 
+func TestGetCommandTimeSeriesShouldReturnErrorWhenDurationIsLessThanWeek(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output}
+	set := flag.NewFlagSet("test", 0)
+	args := []string{
+		"timeSeries",
+		"--repository", "https://github.com/hmiyado/four-keys",
+		"--since", "2022-10-01",
+		"--until", "2022-10-06",
+		"--interval", "week"}
+	_ = set.Parse(args)
+
+	cCtx := cli.NewContext(app, set, nil)
+	err := GetCommandTimeSeries().Run(cCtx, args...)
+
+	if !strings.Contains(err.Error(), "Interval is too short") {
+		t.Errorf("timeSeries should return error when duration is less than day but stderr: %v stdout: %v", err, output.String())
+	}
+}
+
 func TestGetCommandTimeSeriesShouldReturnTimeSeriesInMonthly(t *testing.T) {
 	output := bytes.NewBuffer([]byte{})
 	app := &cli.App{Writer: output}
@@ -108,5 +149,25 @@ func TestGetCommandTimeSeriesShouldReturnTimeSeriesInMonthly(t *testing.T) {
 	}
 	if first.Date.Year() != 2022 || first.Date.Month() != 10 || first.Date.Day() != 1 {
 		t.Errorf("timeSeries should start from 2022-10-01 but %v", first.Date)
+	}
+}
+
+func TestGetCommandTimeSeriesShouldReturnErrorWhenDurationIsLessThanMonth(t *testing.T) {
+	output := bytes.NewBuffer([]byte{})
+	app := &cli.App{Writer: output}
+	set := flag.NewFlagSet("test", 0)
+	args := []string{
+		"timeSeries",
+		"--repository", "https://github.com/hmiyado/four-keys",
+		"--since", "2022-10-01",
+		"--until", "2022-10-27",
+		"--interval", "month"}
+	_ = set.Parse(args)
+
+	cCtx := cli.NewContext(app, set, nil)
+	err := GetCommandTimeSeries().Run(cCtx, args...)
+
+	if !strings.Contains(err.Error(), "Interval is too short") {
+		t.Errorf("timeSeries should return error when duration is less than day but stderr: %v stdout: %v", err, output.String())
 	}
 }
