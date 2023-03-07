@@ -3,10 +3,35 @@ package core
 import "time"
 
 func GetDeploymentFrequency(releases []*Release, option Option) float64 {
-	duration := option.Until.Sub(option.Since)
-	daysCount := int(duration.Hours() / 24)
+	return GetDeploymentFrequencyByTimeunit(releases, option.Since, option.Until, "day")
+}
+
+// GetDeploymentFrequencyByTimeunit returns deployment frequency by timeunit.
+// timeunitKind is one of "day", "week", "month". Default is "day".
+// If timeunitKind is not one of them, "day" is used.
+func GetDeploymentFrequencyByTimeunit(releases []*Release, since time.Time, until time.Time, timeunitKind string) float64 {
+	duration := until.Sub(since)
+	frequency := float64(duration / (time.Hour * 24))
+	switch timeunitKind {
+	case "day":
+		frequency = float64(duration / (time.Hour * 24))
+		if frequency == 0 {
+			frequency = 1
+		}
+	case "week":
+		frequency = float64(duration / (time.Hour * 24 * 7))
+		if frequency == 0 {
+			frequency = 1
+		}
+	case "month":
+		frequency = float64((until.Year()-since.Year())*12 + int(until.Month()-since.Month()))
+		if frequency == 0 {
+			frequency = 1
+		}
+	}
+
 	releasesCount := len(releases)
-	return float64(releasesCount) / float64(daysCount)
+	return float64(releasesCount) / frequency
 }
 
 func GetMeanLeadTimeForChanges(releases []*Release) time.Duration {

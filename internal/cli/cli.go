@@ -13,6 +13,7 @@ func DefaultApp(version string) *cli.App {
 		Action:  defaultAction,
 		Commands: []*cli.Command{
 			GetCommandReleases(),
+			GetCommandTimeSeries(),
 		},
 		OnUsageError: onUsageError,
 	}
