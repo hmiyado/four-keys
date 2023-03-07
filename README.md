@@ -26,6 +26,10 @@ Download binary from [Releases page](https://github.com/hmiyado/four-keys/releas
 
 ## Example
 
+### Default
+
+four-keys command outputs four keys by default.
+
 ```sh
 $ four-keys | jq
 {
@@ -44,6 +48,50 @@ $ four-keys | jq
   },
   "changeFailureRate": 0
 }
+```
+
+### Time series
+
+"timeSeries" option outputs four keys for each interval(day, week, month).
+
+```sh
+$ four-keys timeSeries --repository https://github.com/hmiyado/four-keys --since 2022-10-01 --until 2022-12-31 --interval month |jq
+{
+  "option": {
+    "since": "2022-10-01T00:00:00Z",
+    "until": "2022-12-31T23:59:59Z"
+  },
+  "items": [
+    {
+      "time": "2022-12-01T00:00:00Z",
+      "deploymentFrequency": 0,
+      "leadTimeForChanges": 0,
+      "timeToRestore": 0,
+      "changeFailureRate": 0
+    },
+    {
+      "time": "2022-11-01T00:00:00Z",
+      "deploymentFrequency": 1,
+      "leadTimeForChanges": 12.61,
+      "timeToRestore": 0,
+      "changeFailureRate": 0
+    },
+    {
+      "time": "2022-10-01T00:00:00Z",
+      "deploymentFrequency": 3,
+      "leadTimeForChanges": 20.960555555555555,
+      "timeToRestore": 0,
+      "changeFailureRate": 0
+    }
+  ]
+}
+```
+
+### Releases
+
+"releases" option outputs each releases used for calculating four keys.
+
+```sh
 $ four-keys releases --repository https://github.com/go-git/go-git --since 2015-12-20 --until 2016-01-12 | jq
 {
   "option": {
