@@ -2,6 +2,16 @@
 
 measure four keys metrics.
 
+DeploymentFrequency | LeadTimeForChanges
+-- | --
+![DeploymentFrequency](scripts/graph/deployment_frequency.jpg) | ![LeadTimeForChanges](scripts/graph/lead_time_for_changes.jpg)
+
+TimeToRestore | ChangeFailureRate
+-- | --
+![TimeToRestore](scripts/graph/time_to_restore.jpg) | ![ChangeFailureRate](scripts/graph/change_failure_rate.jpg)
+
+## Metrics
+
 $$
 DeploymentFrequency = (NumOfSuccessfulReleases) / (NumOfDays)
 $$
