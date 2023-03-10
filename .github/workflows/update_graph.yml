@@ -1,0 +1,20 @@
+name: update graph
+on:
+  schedule:
+    # 1st day every month
+    - cron: '0 0 1 * *'
+
+jobs:
+  update-graph:
+    name: Update graph
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          apt-get install gnuplot
+          ./scripts/graph/generate_graph.sh
+          git add -A
+          git commit -m 'Update four keys images'
+          gh pr create --fill
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
