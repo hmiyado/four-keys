@@ -3,6 +3,8 @@ on:
   schedule:
     # 1st day every month
     - cron: '0 0 1 * *'
+    # every Sunday
+    - cron: '0 0 * * 0'
 
 jobs:
   update-graph:
