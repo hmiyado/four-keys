@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
-          apt-get install gnuplot
+          sudo apt-get install gnuplot
           ./scripts/graph/generate_graph.sh
           git add -A
           git commit -m 'Update four keys images'
