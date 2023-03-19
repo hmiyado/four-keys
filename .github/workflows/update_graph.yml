@@ -3,8 +3,8 @@ on:
   schedule:
     # 1st day every month
     - cron: '0 0 1 * *'
-    # every Sunday
-    - cron: '0 0 * * 0'
+    # every Saturday Sunday
+    - cron: '0 0 * * 6,0'
 
 jobs:
   update-graph:
@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: git setting
+        run: |
+          git config --local user.email "10195648+hmiyado@users.noreply.github.com"
+          git config --local user.name "hmiyado"
       - run: |
           sudo apt-get install gnuplot
           ./scripts/graph/generate_graph.sh
