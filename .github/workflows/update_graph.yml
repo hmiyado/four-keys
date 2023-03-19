@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: git setting
+        run: |
+          git config --local user.email "10195648+hmiyado@users.noreply.github.com"
+          git config --local user.name "hmiyado"
       - run: |
           sudo apt-get install gnuplot
           ./scripts/graph/generate_graph.sh
