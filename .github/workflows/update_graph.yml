@@ -17,9 +17,11 @@ jobs:
           git config --local user.email "10195648+hmiyado@users.noreply.github.com"
           git config --local user.name "hmiyado"
       - run: |
+          set -x
           sudo apt-get install gnuplot
           ./scripts/graph/generate_graph.sh
           git add -A
+          git switch -c update-graph
           git commit -m 'Update four keys images'
           gh pr create --fill
         env:
