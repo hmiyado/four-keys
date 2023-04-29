@@ -23,6 +23,6 @@ jobs:
           git add -A
           git switch -c update-graph
           git commit -m 'Update four keys images'
-          gh pr create --fill
+          gh pr create --fill --head
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
