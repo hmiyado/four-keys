@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: git setting
         run: |
           git config --local user.email "10195648+hmiyado@users.noreply.github.com"
