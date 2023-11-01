@@ -3,7 +3,7 @@ module github.com/hmiyado/four-keys
 go 1.19
 
 require (
-	github.com/go-git/go-git/v5 v5.9.0
+	github.com/go-git/go-git/v5 v5.10.0
 	github.com/urfave/cli/v2 v2.25.7
 )
 
