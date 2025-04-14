@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/go-git/go-git/v5 v5.14.0
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v2 v2.27.6
 )
 
 require (
