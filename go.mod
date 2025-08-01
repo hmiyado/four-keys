@@ -2,7 +2,7 @@ module github.com/hmiyado/four-keys
 
 go 1.23.0
 
-toolchain go1.24.4
+toolchain go1.24.5
 
 require (
 	github.com/go-git/go-git/v5 v5.16.2
