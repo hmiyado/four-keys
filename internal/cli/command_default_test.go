@@ -20,7 +20,7 @@ func TestDefaultAppShouldReturnMetricsWithRepositoryUrlSinceUntil(t *testing.T) 
 
 	err := testApp.Run([]string{"four-keys", "--repository", "https://github.com/go-git/go-git", "--since", "2020-01-01", "--until", "2020-12-31"})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 	var cliOutput DefaultCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
@@ -48,7 +48,7 @@ func TestDefaultAppShouldReturnTimeToRestoreAndChangeFailureRate(t *testing.T) {
 
 	err := testApp.Run([]string{"four-keys", "--repository", "https://github.com/go-git/go-git", "--since", "2015-12-01", "--until", "2016-05-31"})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 	var cliOutput DefaultCliOutput
 	json.Unmarshal(output.Bytes(), &cliOutput)
@@ -67,7 +67,7 @@ func TestDefaultAppShouldRunWithoutOption(t *testing.T) {
 
 	err := testApp.Run([]string{"four-keys"})
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 
 }

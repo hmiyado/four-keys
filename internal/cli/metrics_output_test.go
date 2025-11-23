@@ -25,13 +25,13 @@ func TestPresentShouldEqualMarshalAndUnmarshalJSON(t *testing.T) {
 	}
 	marshaled, err := json.Marshal(expected)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 
 	var actual DurationWithTimeUnit
 	unmarshalError := json.Unmarshal(marshaled, &actual)
 	if unmarshalError != nil {
-		t.Errorf(err.Error())
+		t.Error(unmarshalError)
 	}
 
 	if expected.Duration.Seconds() == actual.Duration.Seconds() && expected.timeUnit == actual.timeUnit {

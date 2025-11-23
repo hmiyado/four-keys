@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -33,6 +34,8 @@ func ignoreReleases(sources []ReleaseSource, option *Option) []ReleaseSource {
 
 func createReleasesBySources(sources []ReleaseSource, option *Option, repository *git.Repository) []*Release {
 	releasesChannel := make(chan *Release)
+	// go-git repository is not thread-safe, so we need to protect it with a mutex
+	var repositoryMutex sync.Mutex
 	createReleaseOrNil := func(source ReleaseSource, i int) {
 		if !option.isInTimeRange(source.commit.Committer.When) {
 			option.Debugln("source[", i, "](", source.tag.Name().Short(), ") is skipped for outof time range")
@@ -48,7 +51,9 @@ func createReleasesBySources(sources []ReleaseSource, option *Option, repository
 		if option != nil && option.IsLocalRepository {
 			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByLocalGit(sources, i, option)
 		} else {
+			repositoryMutex.Lock()
 			isRestored, leadTimeForChanges = getIsRestoredAndLeadTimeForChangesByGoGit(sources, i, option, repository)
+			repositoryMutex.Unlock()
 		}
 		option.StopTimer(timerEachReleases)
 
